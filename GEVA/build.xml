@@ -112,6 +112,18 @@
     <pathelement location="lib/bsf/bsf.jar"/>
   </path>
   
+  <property name="geva_rc1_exp.test.classpath"   value="${module.geva_rc1_exp.basedir}"/>
+  <path id="geva_rc1_exp.test.classpath">
+    <path refid="${module.jdk.classpath.geva_rc1_exp}"/>
+    <pathelement location="${geva_rc1_exp.output.dir}"/>
+    <pathelement location="lib/antlr/antlr-2.7.5.jar"/>
+    <pathelement location="lib/jscheme/jscheme-7.2.jar"/>
+    <pathelement location="lib/commons-logging/commons-logging-1.1.jar"/>
+    <pathelement location="lib/groovy/groovy-1.0.jar"/>
+    <pathelement location="lib/asm/asm-2.2.jar"/>
+    <pathelement location="lib/bsf/bsf.jar"/>
+    <pathelement location="/sw/share/java/junit/junit.jar"/>
+  </path>
   
   <patternset id="excluded.from.module.geva_rc1_exp">
     <patternset refid="ignored.files"/>
@@ -121,10 +133,16 @@
     <patternset refid="excluded.from.module.geva_rc1_exp"/>
   </patternset>
   
+  <property name="geva_rc1_exp.module.test.sourcepath"   value="${module.geva_rc1_exp.basedir}/test"/>
+
   <path id="geva_rc1_exp.module.sourcepath">
     <dirset dir="${module.geva_rc1_exp.basedir}">
       <include name="src"/>
     </dirset>
+  </path>
+  
+  <path id="geva_rc1_exp.module.test.sourcepath.id">
+    <dirset dir="${geva_rc1_exp.module.test.sourcepath}"/>
   </path>
   
   <property name="dist.home"     value="${module.geva_rc1_exp.basedir}/dist"/>
@@ -146,7 +164,7 @@
     <fail message="Must use jdk version >= 1.5. Your version is: ${ant.java.version}" />
   </target>
 
-  <target name="compile.module.geva_rc1_exp" depends="pre-compile, compile.module.geva_rc1_exp.production,compile.module.geva_rc1_exp.tests" description="Compile module GEVA_rc1_exp"/>
+  <target name="compile.module.geva_rc1_exp" depends="pre-compile, compile.module.geva_rc1_exp.production" description="Compile module GEVA_rc1_exp"/>
   
   <target name="compile.module.geva_rc1_exp.production"
 	  if="jdk1.5" description="Compile module GEVA_rc1_exp; production classes">
@@ -166,9 +184,8 @@
       </fileset>
     </copy>
   </target>
-  
-  <target name="compile.module.geva_rc1_exp.tests" depends="compile.module.geva_rc1_exp.production" description="compile module GEVA_rc1_exp; test classes" unless="skip.tests"/>
-  
+
+    <!-- ============== Clean up =========================-->
   <target name="clean.module.geva_rc1_exp" description="cleanup module">
     <delete dir="${geva_rc1_exp.output.dir}"/>
     <delete dir="${geva_rc1_exp.testoutput.dir}"/>

@@ -35,7 +35,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 package Mapper;
 
 import java.util.ArrayList;
-
+import Util.Enums;
 /**
  * Rule extends Arraylist<Production>.
  * @author EHemberg
@@ -102,10 +102,14 @@ public class Rule extends ArrayList<Production> {
 
     /**
      * Set the left hand side symbol of the rule
+     * Must be a Non Terminal symbol. 
      * @param s left hand side symbol
      */
     public void setLHS(Symbol s) {
-        this.lhs = s;
+	assert (s.getType() == Enums.SymbolType.NTSymbol) : "Bad type: "+s.getType();
+	if(s.getType() == Enums.SymbolType.NTSymbol) {
+	    this.lhs = s;
+	}
     }
 
     /**
@@ -128,22 +132,6 @@ public class Rule extends ArrayList<Production> {
             }
         }
         return s.toString();
-    }
-    
-    public static void main(String[] args){
-        Rule r = new Rule();
-        Symbol s = new Symbol();
-        Symbol s2 = new Symbol();
-        r.lhs = s;
-        Rule r2 = new Rule(r);
-        System.out.println(r.lhs);
-        System.out.println(r2.lhs);
-        r.lhs = null;
-        System.out.println(r.lhs);
-        System.out.println(r2.lhs);
-        r.lhs = s2;
-        System.out.println(r.lhs);
-        System.out.println(r2.lhs);
     }
     
 }

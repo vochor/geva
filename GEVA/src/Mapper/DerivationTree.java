@@ -326,7 +326,7 @@ public class DerivationTree extends NimbleTree<Symbol> {
                         // GE Codon uses a codon from the genotype
                         if(!this.genIter.hasNext()){
                             this.genIter = genny.iterator();
-                            this.wrapCount ++;
+                            this.wrapCount++;
                         }
                         
                         currentCodonValue = this.genIter.next();
@@ -378,66 +378,6 @@ public class DerivationTree extends NimbleTree<Symbol> {
         return geneCnt;
     }
     
-
-    @SuppressWarnings({"ConstantConditions", "IOResourceOpenedButNotSafelyClosed"})
-    public static void main(String[] args) throws MalformedGrammarException {
-        int length = 500;
-        int wraps = 2;
-        //int maxCodonValue = Integer.MAX_VALUE;
-        GEGrammar g = new GEGrammar();
-        g.setMaxWraps(wraps);
-        g.setPhenotype(new Phenotype());
-	g.setMaxDerivationTreeDepth(20);
-
-        GEChromosome gen = new GEChromosome(length);
-        gen.setAll(randomIntArray(length));
-	gen.setMaxChromosomeLength(500);
-	gen.setMaxCodonValue(10);
-
-        g.setGenotype(gen);
-	String testGrammar = "<A> ::= a | b | <C>\n<C> ::= def\n";
-	g.readBNFString(testGrammar);
-        
-	g.getPhenotype().clear();
-	DerivationTree dT = new DerivationTree(g, g.getGenotype());
-	if(dT.buildDerivationTree()) {
-	    System.out.println("Built derivation tree successfully");
-	    System.out.println("Phenotype: " + g.getPhenotype().getString());
-	} else {
-	    System.out.println("Failed to build derivation tree");
-	}
-
-	String [] geCodonSpecs = {
-	    "<GECodonValue-3+5>",
-	    "<GECodonValue{x,y,z}>",
-	    "<GECodonValue[-10, -5]>",
-	    "<GECodonValue[-10,-5)>",
-	    "<GECodonValue(-10, -5]>",
-	    "<GECodonValue(-10,-5)>",
-	    "<GECodonValue[6.0,7.0]>",
-	    "<GECodonValue[6e2, 7e2]>",
-	    "<GECodonValue(10.0,11.0]>",
-	    "<GECodonValue[13.0, 14.0)>"
-	};
-	for (String spec: geCodonSpecs) {
-	    // up to and including 10: max codon value is 10
-	    for(int j = 0; j <= 10; j++) {
-		System.out.println("spec = " + spec + "; codon = " + j);
-		String s = dT.getGECodonValue(spec, j);
-		System.out.println("result: " + s);
-	    }
-	}
-    }
-
-    private static int[] randomIntArray(int length) {
-
-        int[] a = new int[length];
-        MersenneTwisterFast m = new MersenneTwisterFast();
-        for(int i=0;i<length;i++) {
-            a[i] = Math.abs(m.nextInt());
-        }
-        return a;
-    }
 }
 
 
