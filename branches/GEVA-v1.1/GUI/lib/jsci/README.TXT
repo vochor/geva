@@ -1,1 +1,0 @@
-http://jsci.sourceforge.net/
