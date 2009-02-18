@@ -128,7 +128,7 @@ public class Symbol {
     public boolean equals(String newSymbol)  {
         //Check the symbolString and the type
         return (getSymbolString().equals(newSymbol));
-        }
+    }
     
     /**
      * Clears the string and type

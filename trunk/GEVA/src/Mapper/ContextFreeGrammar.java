@@ -73,29 +73,33 @@ public abstract class ContextFreeGrammar extends Grammar {
      */
     @SuppressWarnings({"UnusedReturnValue", "IOResourceOpenedButNotSafelyClosed"})
     public boolean readBNFFile(String file_name) {
+	StringBuffer contents = new StringBuffer();
         try {
             int bufferSize = 1024;
             String line;
             ClassLoader loader = ClassLoader.getSystemClassLoader();
             InputStream is = loader.getResourceAsStream(file_name);
-            StringBuffer contents = new StringBuffer();
             InputStreamReader isr = new InputStreamReader(is);
             BufferedReader br = new BufferedReader(isr, bufferSize);
+	    assert (br != null) : "Cannot load resource from classloader: "+file_name;
             while( (line = br.readLine()) != null ) {
                 contents.append(line);
                 //readLine removes the lineseparator from http://www.javapractices.com/Topic42.cjp
                 contents.append(System.getProperty("line.separator"));
             }
             br.close();
-            contents.append("\n");
-            return readBNFString(contents.toString());
         } catch(FileNotFoundException e) {
-            System.err.println("File not found: "+file_name);
+            System.err.println("Grammar File not found: "+file_name);
+            return false;
+       } catch(NullPointerException e) {
+            System.err.println("Grammar File not found in classloader: "+file_name);
             return false;
         } catch(IOException e) {
-            System.err.println("IOException: "+file_name);
+            System.err.println("IOException when looking for grammar file: "+file_name);
             return false;
         }
+	contents.append("\n");
+	return readBNFString(contents.toString());
     }
 
     /**Read a BNF file to a string and call readBNFString to parse the grammar
@@ -105,12 +109,12 @@ public abstract class ContextFreeGrammar extends Grammar {
      */
     @SuppressWarnings({"UnusedReturnValue", "IOResourceOpenedButNotSafelyClosed"})
     boolean readBNFFileFromFilesystem(String file_name) {
+	StringBuffer contents = new StringBuffer();
         try {
             final int bufferSize = 1024;
             String line;
             File f = new File(file_name);
             FileReader fr = new FileReader(f);
-            StringBuffer contents = new StringBuffer();
             BufferedReader br = new BufferedReader(fr, bufferSize);
             while( (line = br.readLine()) != null ) {
                 contents.append(line);
@@ -118,15 +122,15 @@ public abstract class ContextFreeGrammar extends Grammar {
                 contents.append(System.getProperty("line.separator"));
             }
             br.close();
-            contents.append("\n");
-            return readBNFString(contents.toString());
         } catch(FileNotFoundException e) {
-            System.err.println("File not found: "+file_name);
+            System.err.println("Grammar File not found: "+file_name);
             return false;
         } catch(IOException e) {
-            System.err.println("IOException: "+file_name);
+            System.err.println("IOException when opening grammar file: "+file_name);
             return false;
         }
+	contents.append("\n");
+	return readBNFString(contents.toString());
     }
 
 
@@ -138,7 +142,9 @@ public abstract class ContextFreeGrammar extends Grammar {
      */
     @SuppressWarnings({"ConstantConditions"})
     boolean readBNFString(String bnfString) {
-
+	if(bnfString == null) {
+	    return false;
+	}
         Rule newRule = new Rule(); // Used to create new rules for grammar
         boolean insertRule = false;// If newRule is to be inserted onto grammar
         Rule currentRule = null;// Used in pass 2 to add productions to current rule
@@ -526,6 +532,7 @@ public abstract class ContextFreeGrammar extends Grammar {
      * @return found rule or null if no rule found
      */
     public Rule findRule(Symbol s){
+	assert (s != null) : "Symbol in findRule is:" + s;
         Iterator<Rule> iter = rules.iterator();
         Rule r;
         while(iter.hasNext()) {
@@ -543,6 +550,7 @@ public abstract class ContextFreeGrammar extends Grammar {
      * @return found rule or null if no rule found
      */
     Rule findRule(String s){
+	assert (s != null) : "String in findRule is:" + s;
         Iterator<Rule> iter = rules.iterator();
         Rule r;
         while(iter.hasNext()) {

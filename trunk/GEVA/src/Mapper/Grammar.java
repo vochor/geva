@@ -96,10 +96,15 @@ public abstract class Grammar implements Mapper{
 
     /**
      * Get the start symbol of the grammar
+     * If there are no rules null is returned
      * @return start symbol
      */
     public Symbol getStartSymbol() {
-        return rules.get(startSymbol_index).getLHS();
+	assert (rules.size() > 0) : "Not getting Start Symbol, no rules";
+	if(rules.size() > 0) {
+	    return rules.get(startSymbol_index).getLHS();
+	}
+	return null;
     }
 
     /** Change start symbol by index on ArrayList of rules.
@@ -108,7 +113,8 @@ public abstract class Grammar implements Mapper{
      */
     @SuppressWarnings({"UnusedReturnValue", "SameParameterValue"})
     boolean setStartSymbol(int index) {
-        if(index<rules.size()){// Check boundaries.
+	assert (index >= 0 && index < rules.size()) : "Bad StartSymbol index: "+ index;
+        if(index<rules.size() && index >=0){// Check boundaries.
             startSymbol_index = index;
             genotype2Phenotype();// Update phenotype.
             return true;

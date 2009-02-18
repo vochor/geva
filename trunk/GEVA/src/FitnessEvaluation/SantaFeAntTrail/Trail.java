@@ -245,66 +245,70 @@ public class Trail {
     /**
      * Turn the ant right
      */
-    public void right(){
+    public void left(){
         //System.out.print("r");
-        _energy--;
-        if(_facing_current_Y<0){
-            _facing_current_X=_current_X+1;
-            _facing_current_Y=_current_Y;
-        } else if(_facing_current_Y>GRID_HEIGHT){
-            _facing_current_X=_current_X-1;
-            _facing_current_Y=_current_Y;
-        } else if(_facing_current_X<0){
-            _facing_current_Y=_current_Y-1;
-            _facing_current_X=_current_X;
-        } else if(_facing_current_X>GRID_WIDTH){
-            _facing_current_Y=_current_Y+1;
-            _facing_current_X=_current_X;
-        } else if(_facing_current_Y<_current_Y){
-            _facing_current_X=_current_X+1;
-            _facing_current_Y=_current_Y;
-        } else if(_facing_current_Y>_current_Y){
-            _facing_current_X=_current_X-1;
-            _facing_current_Y=_current_Y;
-        } else if(_facing_current_X<_current_X){
-            _facing_current_X=_current_X;
-            _facing_current_Y=_current_Y-1;
-        } else if(_facing_current_X>_current_X){
-            _facing_current_X=_current_X;
-            _facing_current_Y=_current_Y+1;
+        if(get_Energy_Left()) {
+            _energy--;
+            if (_facing_current_Y < 0) {
+                _facing_current_X = _current_X + 1;
+                _facing_current_Y = _current_Y;
+            } else if (_facing_current_Y > GRID_HEIGHT) {
+                _facing_current_X = _current_X - 1;
+                _facing_current_Y = _current_Y;
+            } else if (_facing_current_X < 0) {
+                _facing_current_Y = _current_Y - 1;
+                _facing_current_X = _current_X;
+            } else if (_facing_current_X > GRID_WIDTH) {
+                _facing_current_Y = _current_Y + 1;
+                _facing_current_X = _current_X;
+            } else if (_facing_current_Y < _current_Y) {
+                _facing_current_X = _current_X + 1;
+                _facing_current_Y = _current_Y;
+            } else if (_facing_current_Y > _current_Y) {
+                _facing_current_X = _current_X - 1;
+                _facing_current_Y = _current_Y;
+            } else if (_facing_current_X < _current_X) {
+                _facing_current_X = _current_X;
+                _facing_current_Y = _current_Y - 1;
+            } else if (_facing_current_X > _current_X) {
+                _facing_current_X = _current_X;
+                _facing_current_Y = _current_Y + 1;
+            }
         }
     }
 
     /**
      * Turn the ant left
      */
-    public void left(){
+    public void right(){
         //System.out.print("l");
-        _energy--;
-        if(_facing_current_Y<0){
-            _facing_current_X=_current_X-1;
-            _facing_current_Y=_current_Y;
-        } else if(_facing_current_Y>GRID_HEIGHT){
-            _facing_current_X=_current_X+1;
-            _facing_current_Y=_current_Y;
-        } else if(_facing_current_X<0){
-            _facing_current_Y=_current_Y+1;
-            _facing_current_X=_current_X;
-        } else if(_facing_current_X>GRID_WIDTH){
-            _facing_current_Y=_current_Y-1;
-            _facing_current_X=_current_X;
-        } else if(_facing_current_Y<_current_Y){
-            _facing_current_X=_current_X-1;
-            _facing_current_Y=_current_Y;
-        } else if(_facing_current_Y>_current_Y){
-            _facing_current_X=_current_X+1;
-            _facing_current_Y=_current_Y;
-        } else if(_facing_current_X<_current_X){
-            _facing_current_X=_current_X;
-            _facing_current_Y=_current_Y+1;
-        } else if(_facing_current_X>_current_X){
-            _facing_current_X=_current_X;
-            _facing_current_Y=_current_Y-1;
+        if(get_Energy_Left()) {
+            _energy--;
+            if (_facing_current_Y < 0) {
+                _facing_current_X = _current_X - 1;
+                _facing_current_Y = _current_Y;
+            } else if (_facing_current_Y > GRID_HEIGHT) {
+                _facing_current_X = _current_X + 1;
+                _facing_current_Y = _current_Y;
+            } else if (_facing_current_X < 0) {
+                _facing_current_Y = _current_Y + 1;
+                _facing_current_X = _current_X;
+            } else if (_facing_current_X > GRID_WIDTH) {
+                _facing_current_Y = _current_Y - 1;
+                _facing_current_X = _current_X;
+            } else if (_facing_current_Y < _current_Y) {
+                _facing_current_X = _current_X - 1;
+                _facing_current_Y = _current_Y;
+            } else if (_facing_current_Y > _current_Y) {
+                _facing_current_X = _current_X + 1;
+                _facing_current_Y = _current_Y;
+            } else if (_facing_current_X < _current_X) {
+                _facing_current_X = _current_X;
+                _facing_current_Y = _current_Y + 1;
+            } else if (_facing_current_X > _current_X) {
+                _facing_current_X = _current_X;
+                _facing_current_Y = _current_Y - 1;
+            }
         }
     }
 
@@ -313,58 +317,59 @@ public class Trail {
      */
     public void move(){
         //System.out.print("m");
-        int old_current_X,old_current_Y;
-        old_current_X=_current_X;
-        old_current_Y=_current_Y;
-        _energy--;
-        if( (_facing_current_X<GRID_WIDTH) && !(_facing_current_X<0)
-                && (_facing_current_Y<GRID_HEIGHT) && !(_facing_current_Y<0)){
-            _current_X=_facing_current_X;
-            _current_Y=_facing_current_Y;
-            if(_working_trail[_current_X][_current_Y]==1){
-                //System.out.print("P");
-                _picked_up++;
-                _working_trail[_current_X][_current_Y]=0;
-            }
-            if(old_current_X<_current_X){
-                _facing_current_X=_current_X+1;
-                _facing_current_Y=_current_Y;
-            }
-            if(old_current_X>_current_X){
-                _facing_current_X=_current_X-1;
-                _facing_current_Y=_current_Y;
-            }
-            if(old_current_Y<_current_Y){
-                _facing_current_Y=_current_Y+1;
-                _facing_current_X=_current_X;
-            }
-            if(old_current_Y>_current_Y){
-                _facing_current_Y=_current_Y-1;
-                _facing_current_X=_current_X;
-            }
-        } else{
-            if(_facing_current_X>GRID_WIDTH-1){
-                _current_X=0;
-                _facing_current_X=1;
-            } else if(_facing_current_X<0){
-                _current_X=GRID_WIDTH-1;
-                _facing_current_X=GRID_WIDTH-2;
-            } else{
-                if(_facing_current_Y>GRID_HEIGHT-1){
-                    _current_Y=0;
-                    _facing_current_Y=1;
-                } else if(_facing_current_Y<0){
-                    _current_Y=GRID_HEIGHT-1;
-                    _facing_current_Y=GRID_HEIGHT-2;
+        if(get_Energy_Left()) {
+            int old_current_X, old_current_Y;
+            old_current_X = _current_X;
+            old_current_Y = _current_Y;
+            _energy--;
+            if ((_facing_current_X < GRID_WIDTH) && !(_facing_current_X < 0) && (_facing_current_Y < GRID_HEIGHT) && !(_facing_current_Y < 0)) {
+                _current_X = _facing_current_X;
+                _current_Y = _facing_current_Y;
+                if (_working_trail[_current_X][_current_Y] == 1) {
+                    //System.out.print("P");
+                    _picked_up++;
+                    _working_trail[_current_X][_current_Y] = 0;
+                }
+                if (old_current_X < _current_X) {
+                    _facing_current_X = _current_X + 1;
+                    _facing_current_Y = _current_Y;
+                }
+                if (old_current_X > _current_X) {
+                    _facing_current_X = _current_X - 1;
+                    _facing_current_Y = _current_Y;
+                }
+                if (old_current_Y < _current_Y) {
+                    _facing_current_Y = _current_Y + 1;
+                    _facing_current_X = _current_X;
+                }
+                if (old_current_Y > _current_Y) {
+                    _facing_current_Y = _current_Y - 1;
+                    _facing_current_X = _current_X;
+                }
+            } else {
+                if (_facing_current_X > GRID_WIDTH - 1) {
+                    _current_X = 0;
+                    _facing_current_X = 1;
+                } else if (_facing_current_X < 0) {
+                    _current_X = GRID_WIDTH - 1;
+                    _facing_current_X = GRID_WIDTH - 2;
+                } else {
+                    if (_facing_current_Y > GRID_HEIGHT - 1) {
+                        _current_Y = 0;
+                        _facing_current_Y = 1;
+                    } else if (_facing_current_Y < 0) {
+                        _current_Y = GRID_HEIGHT - 1;
+                        _facing_current_Y = GRID_HEIGHT - 2;
+                    }
+                }
+                if (_working_trail[_current_X][_current_Y] == 1) {
+                    //System.out.print("P");
+                    _picked_up++;
+                    _working_trail[_current_X][_current_Y] = 0;
                 }
             }
-            if(_working_trail[_current_X][_current_Y]==1){
-                //System.out.print("P");
-                _picked_up++;
-                _working_trail[_current_X][_current_Y]=0;
-            }
+            _working_trail[_current_X][_current_Y] = 8;
         }
-        _working_trail[_current_X][_current_Y]=8;
     }
 
     /**

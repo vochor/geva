@@ -98,8 +98,7 @@ public class GEGrammar extends ContextFreeGrammar implements ParameterI {
         this.setMaxWraps(copy.getMaxWraps());
         this.maxWraps = copy.maxWraps;
         this.maxDerivationTreeDepth = copy.getMaxDerivationTreeDepth();
-        //this.phenotype = new Phenotype(copy.phenotype);
-        //this.genotype = new GEChromosome(copy.genotype);
+	this.maxCurrentTreeDepth = copy.getMaxCurrentTreeDepth();
     }
 
     /**
@@ -161,11 +160,9 @@ public class GEGrammar extends ContextFreeGrammar implements ParameterI {
      * Clear the grammar
      */
     public void clear() {
-        //this.genotype.clear();
-        //this.phenotype.clear();
-        this.rules.clear();
-        this.setStartSymbol(0);
         this.setValidGrammar(false);
+        this.setStartSymbol(0);
+        this.rules.clear();
     }
     
     /** Instanciates a derivation tree and calls buildDerivationTree() if
