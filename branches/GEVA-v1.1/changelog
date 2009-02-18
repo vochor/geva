@@ -1,0 +1,8 @@
+v1.1 18 february 2009
+	v1.1 is a bug fix release which updates the code for the Santa Fe
+	Ant Trail example problem. Edited the trail so move, right and
+	left can only be done if there is energy left Changed the facing
+	of the ant in the start position to East(x=0,y=1) instead of
+	South(x=1,y=0) Changed left to right and right to left. Thanks to
+	Bill Teahan and Loukas Georgiou for highlighting the ant starting
+	position and left/right bugs.
