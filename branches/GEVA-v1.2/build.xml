@@ -1,0 +1,156 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="geva_rc1" default="dist">
+  <property name="version" value="v1.2"/>
+  <property name="geva" value="GEVA"/>
+  <property name="gui" value="GUI"/>
+  <property name="copy" value="GEVA/LICENSE"/>
+  <property name="out" value="GEVA-${version}"/>
+  <property name="zip" value="GEVA-${version}.zip"/>
+  <property name="tmp" value="tmp"/>
+
+  <!-- Create a distribution of GEVA_GUI -->
+  <target name="dist" depends="clean,compile, post-compile, test,build,clean_source"
+	  description="clean, compile, post-compile, test, build, clean_source"/>
+
+  <!-- Run a clean compile of GEVA and GEVA_GUI, this also does JavaDocs -->
+  <target name="compile" description="Run a clean compile of GEVA and GEVA_GUI">
+    <!-- compile geva -->
+    <ant dir="${geva}" target="dist"/>
+    <!-- compile gui -->
+    <ant dir="${gui}" target="dist"/>
+  </target>
+
+  <!-- Run a clean compile of GEVA and GEVA_GUI no JavaDocs -->
+  <target name="noDocs" depends="clean" description="No docs">
+    <!-- compile geva -->
+    <ant dir="${geva}" target="jar"/>
+    <!-- compile gui -->
+    <ant dir="${gui}" target="jar"/>
+
+    <copy todir="bin" >
+      <fileset dir="${geva}/dist" defaultexcludes="yes" >
+	<include name="*.jar" />
+      </fileset>
+      <fileset dir="${geva}" defaultexcludes="yes" >
+	<include name="lib/**" />
+      </fileset>
+      <fileset dir="${gui}" defaultexcludes="yes" >
+	<include name="lib/**" />
+      </fileset>
+      <fileset dir="${gui}/dist" defaultexcludes="yes" >
+	<include name="*.jar" />
+      </fileset>
+    </copy>
+
+  </target>
+
+  <!-- Copy the jars and libs to bin -->
+  <target name="post-compile" depends="compile" description="Copy the jars and libs to bin">
+    <copy todir="bin" >
+      <fileset dir="${geva}/dist" defaultexcludes="yes" >
+	<include name="*.jar" />
+      </fileset>
+      <fileset dir="${geva}" defaultexcludes="yes" >
+	<include name="lib/**" />
+      </fileset>
+      <fileset dir="${gui}" defaultexcludes="yes" >
+	<include name="lib/**" />
+      </fileset>
+      <fileset dir="${gui}/dist" defaultexcludes="yes" >
+	<include name="*.jar" />
+      </fileset>
+    </copy>
+  </target>
+  
+  <!-- Run automatic tests -->
+  <target name="test" description="Run automatic tests">
+    <!-- test geva -->
+    <ant dir="${geva}" target="test"/>
+    <!-- Running test scripts which compares the data to a facit file -->
+    <exec executable="sh">
+      <arg value="testBuild.sh"/>
+    </exec>
+  </target>
+
+  <!-- Create a release build of GEVA and GEVA_GUI. This also adds COPYING
+       to the top of all java files (not including third-party LGPL library
+       sources)
+    -->
+  <target name="build" depends="post-compile" description="Create a release build of GEVA and GEVA_GUI">
+    <mkdir dir="${out}"/>
+    <!-- copy all files -->
+    <copy todir="${out}" >
+      <fileset dir=".">
+        <exclude name="*.*"/>
+        <exclude name="nbproject"/>
+        <exclude name="${out}"/>
+	<exclude name="${geva}/out/**"/>
+	<exclude name="${geva}/nbproject/**"/>
+	<exclude name="*/nbbuild.xml"/>
+	<exclude name="${gui}/out/**"/>
+	<exclude name="${gui}/nbproject/**"/>
+	<exclude name="releaseInstructions.txt"/>
+      </fileset>
+    </copy>
+    <!-- recopy only java files with COPYING prepended -->
+    <copy todir="${out}" overwrite="true">
+      <fileset dir=".">
+        <include name="**/*.java"/>
+        <exclude name="${out}/**/*"/>
+        <!-- don't add licence to library code written by others -->
+        <exclude name="${geva}/src/com/**/*.java"/>
+        <exclude name="${gui}/src/com/**/*.java"/>
+        <exclude name="nbproject"/>
+      </fileset>
+      <filterchain>
+        <concatfilter prepend="end_comment.txt"/>
+        <concatfilter prepend="${copy}"/>
+        <concatfilter prepend="begin_comment.txt"/>
+      </filterchain>
+    </copy>
+    <copy todir="${out}" file="${geva}/COPYING" overwrite="true"/>
+    <copy todir="${out}" file="${geva}/LICENSE" overwrite="true"/>
+    <copy tofile="${out}/build.xml" file="build-rc1.xml" overwrite="true"/>
+    <copy todir="${out}" file="gui.config" overwrite="true"/>
+
+    <!-- move the javadocs out -->
+    <move file="${out}/${geva}/dist/docs" todir="${out}/${geva}"/>
+    <move file="${out}/${gui}/dist/docs" todir="${out}/${gui}"/>
+    <!-- delete temporary files -->
+    <delete dir="${out}/${geva}/dist"/>
+    <delete dir="${out}/${geva}/out"/>
+    <delete dir="${out}/${gui}/dist"/>
+    <delete dir="${out}/${gui}/out"/>
+    <!-- Create GEVA_GUI.jar -->
+    <jar jarfile="GEVA_GUI.jar" basedir=".">
+      <include name="bin/GUI.jar"/>
+      <manifest>
+	<attribute name="Built-By" value="${user.name}"/>
+	<attribute name="URL" value="http://ncra.ucd.ie"/>
+	<attribute name="Main-Class" value="UI.GEVAPropertiesGUI"/>
+	<attribute name="Class-Path" value="bin/GUI.jar"/> 
+      </manifest>
+    </jar>
+
+    <copy todir="${out}" file="GEVA_GUI.jar" overwrite="true"/>
+    <mkdir dir="tmp"/>
+    <move file="${out}" toDir="${tmp}" overwrite="true"/>
+    <zip basedir="${tmp}" destfile="${zip}"/>
+  </target>
+
+  <!-- Clean out intermediate files used for building GEVA and GEVA_GUI -->
+  <target name="clean_source"
+          description="Clean out intermediate files used for building GEVA and GEVA_GUI">
+    <ant dir="${geva}" target="clean"/>
+    <ant dir="${gui}" target="clean"/>
+    <delete dir="${tmp}" failonerror="false"/>
+  </target>
+
+  <!-- Clean out the release build -->
+  <target name="clean"
+          description="Clean out the release build">
+    <delete file="${zip}" failonerror="false"/>
+  </target>
+
+</project>
+
