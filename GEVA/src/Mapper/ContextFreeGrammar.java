@@ -1,32 +1,4 @@
 /*
-Grammatical Evolution in Java
-Release: GEVA-v1.0.zip
-Copyright (C) 2008 Michael O'Neill, Erik Hemberg, Anthony Brabazon, Conor Gilligan 
-Contributors Patrick Middleburgh, Eliott Bartley, Jonathan Hugosson, Jeff Wrigh
-
-Separate licences for asm, bsf, antlr, groovy, jscheme, commons-logging, jsci is included in the lib folder. 
-Separate licence for rieps is included in src/com folder.
-
-This licence refers to GEVA-v1.0.
-
-This software is distributed under the terms of the GNU General Public License.
-
-
-This program is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program.  If not, see <http://www.gnu.org/licenses/>.
-*/
-
-/*
   * ContextFreeGrammar.java
   *
   * Created on 11 October 2006, 18:01
@@ -89,13 +61,13 @@ public abstract class ContextFreeGrammar extends Grammar {
             }
             br.close();
         } catch(FileNotFoundException e) {
-            System.err.println("Grammar File not found: "+file_name);
+            System.err.println(this.getClass().getName()+" Grammar File not found: "+file_name);
             return false;
        } catch(NullPointerException e) {
-            System.err.println("Grammar File not found in classloader: "+file_name);
+            System.err.println(this.getClass().getName()+" Grammar File not found in classloader: "+file_name);
             return false;
         } catch(IOException e) {
-            System.err.println("IOException when looking for grammar file: "+file_name);
+            System.err.println(this.getClass().getName()+" IOException when looking for grammar file: "+file_name);
             return false;
         }
 	contents.append("\n");
@@ -123,10 +95,10 @@ public abstract class ContextFreeGrammar extends Grammar {
             }
             br.close();
         } catch(FileNotFoundException e) {
-            System.err.println("Grammar File not found: "+file_name);
+            System.err.println(this.getClass().getName()+" Grammar File not found: "+file_name);
             return false;
         } catch(IOException e) {
-            System.err.println("IOException when opening grammar file: "+file_name);
+            System.err.println(this.getClass().getName()+" IOException when opening grammar file: "+file_name);
             return false;
         }
 	contents.append("\n");
@@ -549,8 +521,7 @@ public abstract class ContextFreeGrammar extends Grammar {
      * @param s string of left hand side of rule
      * @return found rule or null if no rule found
      */
-    Rule findRule(String s){
-	assert (s != null) : "String in findRule is:" + s;
+    public Rule findRule(String s){
         Iterator<Rule> iter = rules.iterator();
         Rule r;
         while(iter.hasNext()) {
@@ -684,6 +655,57 @@ public abstract class ContextFreeGrammar extends Grammar {
         }
     }
 
+    /**
+    * This method returns a vector of the rules with exclusively terminal productions
+    * @return Vector
+    */
+    public ArrayList getTerminalRules()
+    {
+        ArrayList terminalRules = new ArrayList();
+        for(Rule r : this.getRules())
+            {
+                boolean terminal = true;
+                for(int i = 0; i< r.size();i++)
+                {
+                    if(r.get(i).getNTSymbols()>0)
+                    {
+                        terminal = false;
+                    } 
+                }
+                if(terminal)
+                {
+                  terminalRules.add(r.getLHS());
+                }
+            }
+        return terminalRules;
+    }
+    
+    /**
+    * This method returns a vector of the rules with exclusively terminal productions
+    * @return Vector
+    */
+    public ArrayList getNonTerminalRules()
+    {
+        ArrayList nonTerminalRules = new ArrayList();
+        for(Rule r : this.getRules())
+            {
+                boolean terminal = true;
+                for(int i = 0; i< r.size();i++)
+                {
+                    if(r.get(i).getNTSymbols()>0)
+                    {
+                        terminal = false;
+                    } 
+                }
+                if(!terminal)
+                {
+                  nonTerminalRules.add(r.getLHS());
+                }
+            }
+        return nonTerminalRules;
+    }    
+       
+    
     /**
      * Checks for infinite recursion in the grammar.
      * @throws MalformedGrammarException The rule is infinitely recursive

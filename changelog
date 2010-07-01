@@ -1,4 +1,22 @@
-v1.1 18 february 2009
+V1.2    FEATURE Adding new problems (JB) 24/06/09
+	We have added the max problem, the Royal Tree problem and the
+	lawnmower problem from Koza's Genetic Programming We also added
+	some new ant trails, San Mateo and Los Altos.
+v1.2    BUGFIX: Fixed shadowed Collector object in Main.Run.java(28/6/10) (JMS) 
+        Main.Run.java (R1637)
+	deleted variable that was being shadowed in main.run class
+	Main.Run
+v1.2    BUGFIX: removed xor fro even five parity problem grammar 25/6/10 (DF)
+        param.Grammar.efp_grammar_gr.bnf(R1629)
+v1.2    BUGFIX: added derivation_tree variable to ExperimentalBase.properties 25/6/10 (DF)
+        param.Parameters.ExperimentBase.properties(R1632)
+v1.2    BUGFIX: PS saving error in LSystem problem. 28/6/10 (EM)
+	Fixed the LSystems bug that occured when saving to eps file. Error
+	was at com.rie.rieps.engine.factories.PSFactory:114. Rectified by
+	modifying GEVA/build.xml to include resources from source dirs in
+	the jar.
+	GEVA/build.xml (R1634)
+v1.1 	18 february 2009
 	v1.1 is a bug fix release which updates the code for the Santa Fe
 	Ant Trail example problem. Edited the trail so move, right and
 	left can only be done if there is energy left Changed the facing
@@ -6,3 +24,11 @@ v1.1 18 february 2009
 	South(x=1,y=0) Changed left to right and right to left. Thanks to
 	Bill Teahan and Loukas Georgiou for highlighting the ant starting
 	position and left/right bugs.
+
+	
+******Changelog template******
+version changeType: Title of change Date (initials)
+	a brief description of the bug
+	a brief description of the solution
+	list of files and the revision in which they were changed
+******************************

@@ -1,32 +1,4 @@
 /*
-Grammatical Evolution in Java
-Release: GEVA-v1.0.zip
-Copyright (C) 2008 Michael O'Neill, Erik Hemberg, Anthony Brabazon, Conor Gilligan 
-Contributors Patrick Middleburgh, Eliott Bartley, Jonathan Hugosson, Jeff Wrigh
-
-Separate licences for asm, bsf, antlr, groovy, jscheme, commons-logging, jsci is included in the lib folder. 
-Separate licence for rieps is included in src/com folder.
-
-This licence refers to GEVA-v1.0.
-
-This software is distributed under the terms of the GNU General Public License.
-
-
-This program is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program.  If not, see <http://www.gnu.org/licenses/>.
-*/
-
-/*
  * Run.java
  *
  * Created on April 17, 2007, 11:02 AM
@@ -70,8 +42,39 @@ public class Run extends AbstractRun {
         this.startTime = System.currentTimeMillis();
     }
 
+    @Override
+    public void experiment(String[] args) {
+        try{
+
+            //Read the command-line arguments
+            if(this.commandLineArgs(args)) {
+                //Initialize timing the excecution
+                long st = System.currentTimeMillis();
+                
+                //Create the Main object
+                //Setup the algorithm
+                this.setup(args);
+                //Initialize the algorithm
+                this.init();
+                //Hack for number of iterations!!?? Create a proper method
+                int its = this.run();
+                //Print collected data
+                this.printStuff();
+                //Time the excecution
+                long et = System.currentTimeMillis();
+                System.out.println("Done running: Total time(Ms) for " 
+                            + its + " generations was:"+(et-st));
+
+            }
+        } catch(Exception e) {
+            System.err.println("Exception: "+e);
+            e.printStackTrace();
+        }
+    }
+    
     /**
-     * Setup the algorithm. Read the properties. Create the modules(Operators) and operations
+     * Setup the algorithm. Read the properties. Create the modules(Operators) 
+     * and operations
      * @param args arguments
      */
     public void setup(String[] args) {
@@ -84,10 +87,10 @@ public class Run extends AbstractRun {
          * Example of setting up an algorithm. 
          * For specific details of operators and operations used see 
          * the respective source or API
-         */
+         */        
         
         //Grammar
-        GEGrammar grammar = new GEGrammar(this.properties);
+        GEGrammar grammar = getGEGrammar(this.properties);
         //Search engine
         MyFirstSearchEngine alg = new MyFirstSearchEngine();
         //Initialiser
@@ -96,7 +99,7 @@ public class Run extends AbstractRun {
         CrossoverOperation singlePointCrossover = new SinglePointCrossover(this.rng, this.properties);
         CrossoverModule crossoverModule = new CrossoverModule(this.rng, singlePointCrossover);
         //Mutation
-        IntFlipMutation mutation = new IntFlipMutation(this.rng, this.properties);
+        MutationOperation mutation = getMutationOperation(this.rng, this.properties);
         MutationOperator mutationModule = new MutationOperator(this.rng, mutation);
         //Selection
         SelectionOperation selectionOperation = getSelectionOperation(this.properties, this.rng);
@@ -120,7 +123,7 @@ public class Run extends AbstractRun {
         IndividualCatcher indCatch = new IndividualCatcher(this.properties);
         stats.addTime(startTime);//Set initialisation time for the statCatcher (Not completly accurate here)
         StatisticsCollectionOperation statsCollection = new StatisticsCollectionOperation(stats, indCatch, this.properties);
-        Collector collector = new Collector(statsCollection);
+        super.collector = new Collector(statsCollection);
         
         /*
          * Init
@@ -136,7 +139,7 @@ public class Run extends AbstractRun {
         //Add modules to pipeline
         pipelineInit.addModule(initialiser);
         pipelineInit.addModule(fitnessEvaluatorInit);
-        pipelineInit.addModule(collector);
+        pipelineInit.addModule(collector);                  
         /*
          * Loop
          */
@@ -181,29 +184,9 @@ public class Run extends AbstractRun {
      * @param args arguments
      */
     public static void main(String[] args) {
-        try{
-//Initialize timing the excecution
-            long st = System.currentTimeMillis();
-            Run mfs = new Run();
-            //Read the command-line arguments
-            if(mfs.commandLineArgs(args)) {
-                //Create the Main object
-                //Setup the algorithm
-                mfs.setup(args);
-                //Initialize the algorithm
-                mfs.init();
-                //Hack for number of iterations!!?? Create a proper method
-                int its = mfs.run();
-                //Print collected data
-                mfs.printStuff();
-                //Time the excecution
-                long et = System.currentTimeMillis();
-                System.out.println("Done running: Total time(Ms) for " + its + " generations was:"+(et-st));
-            }
-        } catch(Exception e) {
-            System.err.println("Exception: "+e);
-            e.printStackTrace();
-        }
+        
+        Run mainRun = new Run();
+        mainRun.experiment(args);
+	System.exit(0);
     }
-    
 }

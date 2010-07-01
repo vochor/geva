@@ -1,31 +1,3 @@
-/*
-Grammatical Evolution in Java
-Release: GEVA-v1.0.zip
-Copyright (C) 2008 Michael O'Neill, Erik Hemberg, Anthony Brabazon, Conor Gilligan 
-Contributors Patrick Middleburgh, Eliott Bartley, Jonathan Hugosson, Jeff Wrigh
-
-Separate licences for asm, bsf, antlr, groovy, jscheme, commons-logging, jsci is included in the lib folder. 
-Separate licence for rieps is included in src/com folder.
-
-This licence refers to GEVA-v1.0.
-
-This software is distributed under the terms of the GNU General Public License.
-
-
-This program is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program.  If not, see <http://www.gnu.org/licenses/>.
-*/
-
 package Util;
 
 /**
@@ -36,6 +8,15 @@ public final class Constants {
 
     //Property file fields. Works as command line args as well
     /**
+     * Used for redirecting stdOut
+     */
+    public static final String STDOUT = "stdOut";
+
+    /**
+     * Used for redirecting stdErr
+     */
+    public static final String STDERR = "stdErr";
+    /**
      * Class name of fitness function. Reflection used to load
      */
     public static final String FITNESS_FUNCTION = "fitness_function";
@@ -44,6 +25,16 @@ public final class Constants {
      * Class name of selection operation. Reflection used to load
      */
     public static final String SELECTION_OPERATION = "selection_operation";
+
+    /**
+     * Class name of mutation operation. Reflection used to load
+     */
+    public static final String MUTATION_OPERATION = "mutation_operation";
+    
+    /**
+     * Class name of crossover operation. Reflection used to load
+     */
+    public static final String CROSSOVER_OPERATION = "crossover_operation";
 
     /**
      * Class name of replacement operator. Reflection used to load
@@ -93,6 +84,26 @@ public final class Constants {
      */
     public static final String GROW_PROBABILITY = "grow_probability";
 
+     /**
+     * this is the number of elements is the set
+     */
+    public static final String PRC_SETSIZE = "prc_setsize";
+    public static final String DEFAULT_PRC_SETSIZE = "0";
+    
+     /**
+     * this is the range that the constants will be generated within
+     */
+    public static final String PRC_RANGE = "prc_range";
+    public static final String DEFAULT_PRC_RANGE = "100";
+    
+    /**
+     * this is the decimal precision of the constants that are generated
+     * the number specifies how many decimal places there should be
+     */
+    public static final String PRC_PRECISION = "prc_precision";
+    public static final String DEFAULT_PRC_PRECISION = "0";
+    
+    
     /**
      * Max depth of tree growth for full and grow initialisation
      */
@@ -190,6 +201,16 @@ public final class Constants {
     public static final String DEFAULT_CHROMOSOME_SIZE = "10";
 
     /**
+     * GEGrammar to use
+     */
+    public static final String GEGRAMMAR = "gegrammar";
+
+    /**
+     * Defualt GEGrammar
+     */
+    public static final String DEFAULT_GEGRAMMAR = "Mapper.GEGrammar";
+
+    /**
      * The seed for the random number generator.
      */
     public static final String RNG_SEED = "rng_seed";
@@ -230,6 +251,12 @@ public final class Constants {
     public static final String MAX_DERIVATION_TREE_DEPTH = "max_dt_depth";
     
     public final static String DEFAULT_MAX_DERIVATION_TREE_DEPTH = String.valueOf(Integer.MAX_VALUE);
+
+    /**
+     * Only crossover in the codons used
+     */
+    public static final String CODONS_USED_SENSITIVE = "codons_used_sensitive";
+
     /**
      * Sets number of step interactions to perform (higher is more accurate)
      */
@@ -250,7 +277,17 @@ public final class Constants {
      * Sets wall width in blocks in ode DamageCalc
      */
     public static final String ODE_DAMAGE_WALL_WIDTH = "ode_damage_wall_width";
-
+    
+    /**
+     * This specifies the file location for the target picture
+     */
+    public static final String TARGET_IMAGE = "target_image";
+    
+    /**
+     * This specifies a phenotype string for the target picture
+     */
+    public static final String TARGET_PHENOTYPE = "target_phenotype";
+    
     /**
      * Sets wall height in blocks in ode DamageCalc
      */
@@ -258,10 +295,44 @@ public final class Constants {
     
     public static final String TARGET_FRACTAL_DIMENSION = "targetFractalDimension";
     public static final String BOX_COUNT_DIVISION = "boxCountDivision";
+    
+    /**
+     * Sets interactive fitness GE on or off
+     */
+    public static final String INTERACTIVE_GE = "interactive_ge";
+    
+    /**
+     * After how many generations should the user be prompted for interaction
+     */
+    public static final String INTERACT_GENS = "interact_generations";
+    
+    /**
+     * Specifies the range to test the fitness for symbolic regression.The format
+     * is sr_range= x eq [start; stepSize; stop]; and multiple ranges can be
+     * specified eg sr_range = x0 eq [0;.5;2]; x1 eq [2;.1;5]. Use rnd(start, cases ,stop)
+     * to specify random points
+     */
+     public static final String SR_RANGE = "sr_range";
+
+     /**
+     * the phenotypic target for symbolic regression
+     */
+     public static final String SR_TARGET = "sr_target";
+
+     /**
+     * boolean specifying whether or not phenotype should be drawn
+     */
+     public static final String DRAW_PHENOTYPE = "draw_phenotype";
+
+    /**
+     * Sets the run class to use
+     */
+    public static final String EXPERIMENT = "main_class";
 
     //Command line args
     public static final String VERSION_FLAG = "-v";
     public static final String HELP_FLAG = "-h";
+    public static String DERIVATION_TREE = "derivation_tree";
 
 
     private Constants() {}

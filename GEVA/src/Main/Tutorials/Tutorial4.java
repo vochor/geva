@@ -1,32 +1,4 @@
 /*
-Grammatical Evolution in Java
-Release: GEVA-v1.0.zip
-Copyright (C) 2008 Michael O'Neill, Erik Hemberg, Anthony Brabazon, Conor Gilligan 
-Contributors Patrick Middleburgh, Eliott Bartley, Jonathan Hugosson, Jeff Wrigh
-
-Separate licences for asm, bsf, antlr, groovy, jscheme, commons-logging, jsci is included in the lib folder. 
-Separate licence for rieps is included in src/com folder.
-
-This licence refers to GEVA-v1.0.
-
-This software is distributed under the terms of the GNU General Public License.
-
-
-This program is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program.  If not, see <http://www.gnu.org/licenses/>.
-*/
-
-/*
  * Tutorial4.java
  *
  * Created on April 17, 2007, 11:02 AM
@@ -64,6 +36,36 @@ public class Tutorial4 extends AbstractRun {
     public void setup() {
     }
     
+    @Override
+    public void experiment(String[] args) {
+        try{
+
+            //Read the command-line arguments
+            if(this.commandLineArgs(args)) {
+                //Initialize timing the excecution
+                long st = System.currentTimeMillis();
+                
+                //Create the Main object
+                //Setup the algorithm
+                this.setup(args);
+                //Initialize the algorithm
+                this.init();
+                //Hack for number of iterations!!?? Create a proper method
+                int its = this.run();
+                //Print collected data
+                this.printStuff();
+                //Time the excecution
+                long et = System.currentTimeMillis();
+                System.out.println("Done running: Total time(Ms) for " 
+                            + its + " generations was:"+(et-st));
+
+            }
+        } catch(Exception e) {
+            System.err.println("Exception: "+e);
+            e.printStackTrace();
+        }
+    }
+       
     /**
      * Setup the algorithm. Read the properties. Create the modules(Operators) and operations
      * @param args The command line arguments
@@ -129,22 +131,8 @@ public class Tutorial4 extends AbstractRun {
      * @param args The command line arguments     
      */
     public static void main(String[] args) {
-        try{
-//Create the Tutorial4 object
-            Tutorial4 mfs = new Tutorial4();
-            
-            //Read the command-line arguments
-            if(mfs.commandLineArgs(args)) {
-                //Setup the algorithm. This calls the above setup method
-                mfs.setup(args);
-                //Initialize the algorithm. This runs the initialisation pipeline
-                mfs.init();
-                System.out.println("Well done running: Tutorial4, now look at Tutorial5");
-            }
-        } catch(Exception e) {
-	    System.err.println("Exception: "+e);
-            e.printStackTrace();
-        }
-    }
-    
+        Tutorial4 mainTutorial4 = new Tutorial4();
+        mainTutorial4.experiment(args);
+	System.exit(0);
+    }    
 }

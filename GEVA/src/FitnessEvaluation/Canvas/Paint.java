@@ -1,31 +1,3 @@
-/*
-Grammatical Evolution in Java
-Release: GEVA-v1.0.zip
-Copyright (C) 2008 Michael O'Neill, Erik Hemberg, Anthony Brabazon, Conor Gilligan 
-Contributors Patrick Middleburgh, Eliott Bartley, Jonathan Hugosson, Jeff Wrigh
-
-Separate licences for asm, bsf, antlr, groovy, jscheme, commons-logging, jsci is included in the lib folder. 
-Separate licence for rieps is included in src/com folder.
-
-This licence refers to GEVA-v1.0.
-
-This software is distributed under the terms of the GNU General Public License.
-
-
-This program is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program.  If not, see <http://www.gnu.org/licenses/>.
-*/
-
 package FitnessEvaluation.Canvas;
 
 import FitnessEvaluation.FitnessFunction;
@@ -46,7 +18,7 @@ import javax.swing.JPanel;
 public class Paint implements FitnessFunction
 {
 
-    private JFrame window = null;
+//    private JFrame window = null;
     private Painting painting = null;
     private double best = Double.MAX_VALUE;
 
@@ -73,23 +45,23 @@ public class Paint implements FitnessFunction
     public boolean canCache()
     {   return true;
     }
-
+    
     private void init()
     {
 
-        if(window != null)
+        if(painting != null)
             return;
         
-        window = new JFrame();
         painting = new Painting();
         painting.setSize(256, 128);
-        
+
+/*
         window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         window.setSize(256, 128);
         window.setVisible(true);
         window.getContentPane().setLayout(new BorderLayout());
         window.getContentPane().add(painting);
-
+*/
     }
     
     class Painting extends JPanel
@@ -150,7 +122,7 @@ public class Paint implements FitnessFunction
         
         private void render(Graphics graphics)
         {   
-
+/*
             graphics.drawImage
             (   image,
                 0, 0, window.getWidth() / 2, window.getHeight(),
@@ -163,7 +135,7 @@ public class Paint implements FitnessFunction
                 0, 0, bestImage.getWidth(), bestImage.getHeight(),
                 null
             );
-
+*/
         }
     
         public double evaluate()

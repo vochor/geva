@@ -1,47 +1,20 @@
 /*
-Grammatical Evolution in Java
-Release: GEVA-v1.0.zip
-Copyright (C) 2008 Michael O'Neill, Erik Hemberg, Anthony Brabazon, Conor Gilligan 
-Contributors Patrick Middleburgh, Eliott Bartley, Jonathan Hugosson, Jeff Wrigh
-
-Separate licences for asm, bsf, antlr, groovy, jscheme, commons-logging, jsci is included in the lib folder. 
-Separate licence for rieps is included in src/com folder.
-
-This licence refers to GEVA-v1.0.
-
-This software is distributed under the terms of the GNU General Public License.
-
-
-This program is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program.  If not, see <http://www.gnu.org/licenses/>.
-*/
-
-/*
  * Grammar.java
  *
  * Created on 09 October 2006, 11:41
  *
  */
-
 package Mapper;
+
 import java.util.ArrayList;
 import java.util.Iterator;
+import Util.Enums;
 
 /**
  * Abstract class for mapping using a Grammar
  * @author EHemberg
  */
-public abstract class Grammar implements Mapper{
+public abstract class Grammar implements Mapper {
 
     // Variables
     private boolean validGrammar;
@@ -50,7 +23,10 @@ public abstract class Grammar implements Mapper{
 
     // Abstract methods
     public abstract boolean genotype2Phenotype();
+
     public abstract boolean phenotype2Genotype();
+
+    public abstract String getDerivationString();
     public abstract void clear();
 
     // Constructors
@@ -58,7 +34,7 @@ public abstract class Grammar implements Mapper{
     Grammar() {
 
         setValidGrammar(false);
-        startSymbol_index=0;
+        startSymbol_index = 0;
         this.rules = new ArrayList<Rule>();
     }
 
@@ -69,7 +45,7 @@ public abstract class Grammar implements Mapper{
         ArrayList<Rule> aLR = new ArrayList<Rule>();
         Iterator<Rule> ruleIt = copy.rules.iterator();
         Rule r;
-        while(ruleIt.hasNext()) {
+        while (ruleIt.hasNext()) {
             r = new Rule(ruleIt.next());
             aLR.add(r);
         }
@@ -100,11 +76,10 @@ public abstract class Grammar implements Mapper{
      * @return start symbol
      */
     public Symbol getStartSymbol() {
-	assert (rules.size() > 0) : "Not getting Start Symbol, no rules";
-	if(rules.size() > 0) {
-	    return rules.get(startSymbol_index).getLHS();
-	}
-	return null;
+        if (rules.size() > 0) {
+            return rules.get(startSymbol_index).getLHS();
+        }
+        return null;
     }
 
     /** Change start symbol by index on ArrayList of rules.
@@ -113,8 +88,7 @@ public abstract class Grammar implements Mapper{
      */
     @SuppressWarnings({"UnusedReturnValue", "SameParameterValue"})
     boolean setStartSymbol(int index) {
-	assert (index >= 0 && index < rules.size()) : "Bad StartSymbol index: "+ index;
-        if(index<rules.size() && index >=0){// Check boundaries.
+        if (index < rules.size() && index >= 0) {// Check boundaries.
             startSymbol_index = index;
             genotype2Phenotype();// Update phenotype.
             return true;
@@ -126,7 +100,7 @@ public abstract class Grammar implements Mapper{
      * @param newStartSymbol new start symbol
      * @return success of replacement
      */
-    public boolean setStartSymbol(Symbol newStartSymbol){
+    public boolean setStartSymbol(Symbol newStartSymbol) {
         Rule rule;
         for (Rule rule1 : rules) {
             rule = rule1;
@@ -143,7 +117,7 @@ public abstract class Grammar implements Mapper{
      * @param newStartSymbol new start symbol
      * @return success of replacement
      */
-    public boolean setStartSymbol(String newStartSymbol){
+    public boolean setStartSymbol(String newStartSymbol) {
         Rule rule;
         for (Rule rule1 : rules) {
             rule = rule1;
@@ -172,6 +146,18 @@ public abstract class Grammar implements Mapper{
     }
 
     /**
+     * Get the number of productions in the grammar
+     * @return number of productions
+     */
+    public int getProductionCount() {
+	int n = 0;
+	for (Rule r: rules) {
+	    n += r.size();
+	}
+	return n;
+    }
+
+    /**
      * Set rules in grammar
      * @param newRules rules to set
      */
@@ -179,4 +165,39 @@ public abstract class Grammar implements Mapper{
         this.rules = newRules;
     }
 
+    /**
+     * Get a list of all the symbols which are terminals, ie the
+     * alphabet over which this grammar's language is defined.
+     * Warning: this won't include any terminals defined via
+     * GECodonValue.
+     * @return ArrayList of terminal Symbols.
+     */
+    public ArrayList<Symbol> getTerminals() {
+        ArrayList<Symbol> t = new ArrayList<Symbol>();
+        for (Rule rule : rules) {
+            for (Production p : rule) {
+                for (Symbol s : p) {
+                    if (s.getType() == Enums.SymbolType.TSymbol) {
+                        t.add(s);
+                    }
+                }
+            }
+        }
+        return t;
+    }
+
+    /**
+     * Get a list of all the terminal strings for this grammar.
+     * Warning: this won't include any terminals defined via
+     * GECodonValue.
+     * @return list of terminal Strings.
+     */
+    public ArrayList<String> getTerminalStrings() {
+        ArrayList<Symbol> tsym = getTerminals();
+        ArrayList<String> tstr = new ArrayList<String>();
+        for (Symbol sym : tsym) {
+            tstr.add(sym.getSymbolString());
+        }
+        return tstr;
+    }
 }

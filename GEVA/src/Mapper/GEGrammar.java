@@ -1,51 +1,22 @@
 /*
-Grammatical Evolution in Java
-Release: GEVA-v1.0.zip
-Copyright (C) 2008 Michael O'Neill, Erik Hemberg, Anthony Brabazon, Conor Gilligan 
-Contributors Patrick Middleburgh, Eliott Bartley, Jonathan Hugosson, Jeff Wrigh
-
-Separate licences for asm, bsf, antlr, groovy, jscheme, commons-logging, jsci is included in the lib folder. 
-Separate licence for rieps is included in src/com folder.
-
-This licence refers to GEVA-v1.0.
-
-This software is distributed under the terms of the GNU General Public License.
-
-
-This program is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program.  If not, see <http://www.gnu.org/licenses/>.
-*/
-
-/*
  * GEGrammar.java
  *
  * Created on 13 October 2006, 10:23
  *
  */
-
 package Mapper;
 
 import Exceptions.BadParameterException;
 import Individuals.GEChromosome;
 import Individuals.Phenotype;
-import Mapper.DerivationNode;
+import Util.Random.MersenneTwisterFast;
+import Util.Enums;
 import Parameter.ParameterI;
 
 import java.io.File;
 import java.util.Properties;
 
 import Util.Constants;
-import Util.Structures.TreeNode;
 import java.util.Stack;
 
 /**
@@ -54,16 +25,22 @@ import java.util.Stack;
  * @author EHemberg
  */
 public class GEGrammar extends ContextFreeGrammar implements ParameterI {
-    
-    private GEChromosome genotype;
-    private Phenotype phenotype;
-    private int maxWraps;
-    private int usedWraps;
-    private int usedCodons;
-    private String name;
+
+    private int PRCSetSize;
+    private int PRCRange;
+    private int PRCPrecision;
+    GEChromosome genotype;
+    Phenotype phenotype;
+    int maxWraps;
+    int usedWraps;
+    int usedCodons;
+    String name;
+    DerivationTree dT;
     int maxDerivationTreeDepth;
     int maxCurrentTreeDepth;
-    
+    int dTNodeCount;
+    private String derivationTreeType;
+
     /** Creates a new instance of GEGrammar */
     public GEGrammar() {
         super();
@@ -95,10 +72,21 @@ public class GEGrammar extends ContextFreeGrammar implements ParameterI {
      */
     public GEGrammar(GEGrammar copy) {
         super(copy);
+        this.derivationTreeType = copy.getDerivationString();
         this.setMaxWraps(copy.getMaxWraps());
         this.maxWraps = copy.maxWraps;
+        // A copy of the derivation tree should be here
+
+
         this.maxDerivationTreeDepth = copy.getMaxDerivationTreeDepth();
-	this.maxCurrentTreeDepth = copy.getMaxCurrentTreeDepth();
+        this.maxCurrentTreeDepth = copy.getMaxCurrentTreeDepth();
+        if (dT != null) {
+            this.dT = new DerivationTree(copy.dT);
+        }
+        this.dTNodeCount = copy.getDTNodeCount();
+        this.name = copy.name;
+        this.maxDerivationTreeDepth = copy.getMaxDerivationTreeDepth();
+        this.maxCurrentTreeDepth = copy.getMaxCurrentTreeDepth();
     }
 
     /**
@@ -107,19 +95,19 @@ public class GEGrammar extends ContextFreeGrammar implements ParameterI {
      * @param p object containing properties
      */
     public void setProperties(Properties p) {
-       String file = null;
+        String file = null;
         String key;
         try {
             key = Constants.GRAMMAR_FILE;
             file = p.getProperty(key);
-            if(file == null) {
+            if (file == null) {
                 throw new BadParameterException(key);
             }
-        } catch(BadParameterException e) {
-            System.out.println(e+" No default grammar");
+        } catch (BadParameterException e) {
+            System.out.println(e + " No default grammar");
         }
         File f = new File(file);
-        if(!f.exists()){ // try classloader
+        if (!f.exists()) { // try classloader
             this.readBNFFile(file);
         } else {
             this.readBNFFileFromFilesystem(file);
@@ -128,16 +116,45 @@ public class GEGrammar extends ContextFreeGrammar implements ParameterI {
         try {
             key = Constants.MAX_WRAPS;
             value = Integer.parseInt(p.getProperty(key));
-            if(value < 0) {
+            if (value < 0) {
                 throw new BadParameterException(key);
             }
-        } catch(BadParameterException e) {
+        } catch (BadParameterException e) {
             value = 0;
-            System.out.println(e+" default wraps:"+value);
+            System.out.println(e + " default wraps:" + value);
         }
-        this.maxWraps = value+1;
-        
+        this.maxWraps = value + 1;
+
+
+        try {
+            this.PRCSetSize = Integer.parseInt(p.getProperty(Constants.PRC_SETSIZE, Constants.DEFAULT_PRC_SETSIZE));
+            this.PRCRange = Integer.parseInt(p.getProperty(Constants.PRC_RANGE, Constants.DEFAULT_PRC_RANGE));
+            this.PRCPrecision = Integer.parseInt(p.getProperty(Constants.PRC_PRECISION, Constants.DEFAULT_PRC_PRECISION));
+
+            if (PRCSetSize < 0) {
+                throw new BadParameterException(Constants.PRC_SETSIZE);
+            }
+            if (PRCRange < 0) {
+                throw new BadParameterException(Constants.PRC_RANGE);
+            }
+            if ((PRCPrecision < 0) || (PRCPrecision > 32)) {
+                throw new BadParameterException(Constants.PRC_PRECISION);
+            }
+        } catch (BadParameterException e) {
+            value = 0;
+            System.out.println(e + " constant range:" + value);
+        }
+        if (PRCSetSize > 0) {
+            generatePRC();
+        }
+
+        this.maxWraps = value + 1;
         this.maxDerivationTreeDepth = Integer.parseInt(p.getProperty(Constants.MAX_DERIVATION_TREE_DEPTH, Constants.DEFAULT_MAX_DERIVATION_TREE_DEPTH));
+        this.derivationTreeType = p.getProperty(Constants.DERIVATION_TREE);
+        if(this.maxWraps>1 && this.derivationTreeType.equals("Mapper.ContextualDerivationTree"))
+        {
+            throw new IllegalArgumentException("Wrapping must be turned off for Context Sensitive trees");
+        }
     }
 
     /**
@@ -157,26 +174,76 @@ public class GEGrammar extends ContextFreeGrammar implements ParameterI {
     }
 
     /**
+     * Replaces constants in the grammar with an array of randomly generated constants
+     * @return 
+     */
+    public void generatePRC() {
+        Rule oldRule = new Rule();
+        oldRule = findRule("<prc>");
+
+        if (oldRule != null) {
+            System.out.println("<prc> rule found in grammar, generating constants");
+            MersenneTwisterFast m = new MersenneTwisterFast();
+
+            // creating rule to store constants
+            Rule newRule = new Rule(PRCSetSize);
+            newRule.setLHS(oldRule.getLHS());
+            Symbol newSymbol = new Symbol();
+            newSymbol.setType(Enums.SymbolType.TSymbol);
+
+
+            for (int i = 0; i < PRCSetSize; i++) {
+                //setting the precision and range to be used
+                int divisor = (int) Math.pow(10, PRCPrecision);
+                float constant = Math.abs((float) m.nextInt());
+                constant = constant % (PRCRange * divisor);    //set the Mod first
+                constant = (constant / divisor);
+
+                //converting to string
+                StringBuffer strConst = new StringBuffer();
+                strConst.append(constant);
+                newSymbol.setSymbolString(strConst.toString());
+
+                Production np = new Production();
+                np.add(new Symbol(newSymbol));
+                newRule.add(np);
+            }
+
+            //replacing old rule with new one.
+            int x = rules.indexOf(oldRule);
+            rules.remove(x);
+            rules.add(x, newRule);
+            System.out.println("PRC SetSize: " + PRCSetSize + " PRC Range: " + PRCRange +
+                    " PRC Precision: " + PRCPrecision);
+            System.out.println("elements in the rule:" + newRule.toString());
+        } else {
+            System.out.println("Warning, PRC attributes specified but no <prc> rule in the grammar, no constants generated");
+        }
+    }
+
+    /**
      * Clear the grammar
      */
     public void clear() {
         this.setValidGrammar(false);
+        this.rules.clear();
         this.setStartSymbol(0);
         this.rules.clear();
     }
-    
+
     /** Instanciates a derivation tree and calls buildDerivationTree() if
      * b is true else sets valid map to true 
-    * @param b if tree should be built
+     * @param b if tree should be built
      * @return validity of mapping
-    */
+     */
     @SuppressWarnings({"UnusedAssignment"})
     public boolean genotype2Phenotype(boolean b) {
         boolean validMap;
-        if(b) {
+        if (b) {
             this.phenotype.clear();
-            DerivationTree dT = new DerivationTree(this, this.getGenotype());
-            validMap = dT.buildDerivationTree();
+            this.dT = TreeMill.getDerivationTree(this);
+            validMap = dT.derive();
+            setDerivationTree(dT);
             this.usedCodons = dT.getGeneCnt();
             this.usedWraps = dT.getWrapCount();
             this.maxCurrentTreeDepth = dT.getDepth();
@@ -188,26 +255,43 @@ public class GEGrammar extends ContextFreeGrammar implements ParameterI {
         return validMap;
     }
 
-    private String generateNameFromTree(DerivationTree tree)
-    {   StringBuilder builder = new StringBuilder();
+    String generateNameFromTree(DerivationTree tree) {
+        StringBuilder builder = new StringBuilder();
         Stack<DerivationNode> nodeStack = new Stack<DerivationNode>();
-        nodeStack.push((DerivationNode)tree.getRoot());
-        while(nodeStack.empty() == false)
-        {   DerivationNode nodes = nodeStack.pop();
-            if(nodes != null)
-            {   if(nodes.getCodonIndex() != -1)
+        nodeStack.push((DerivationNode) tree.getRoot());
+        while (nodeStack.empty() == false) {
+            DerivationNode nodes = nodeStack.pop();
+            if (nodes != null) {
+                if (nodes.getCodonIndex() != -1) {
                     builder.append(nodes.getCodonPick());
-                if(nodes.size() != 0)
-                {   builder.append('[');
-                    nodeStack.push(null);
-                    for(int i = nodes.size(); i > 0; i--)
-                        nodeStack.push((DerivationNode)nodes.get(i - 1));
                 }
-            }
-            else
+                if (nodes.size() != 0) {
+                    builder.append('[');
+                    nodeStack.push(null);
+                    for (int i = nodes.size(); i > 0; i--) {
+                        nodeStack.push((DerivationNode) nodes.get(i - 1));
+                    }
+                }
+            } else {
                 builder.append(']');
+            }
         }
         return builder.toString();
+    }
+
+    /**
+     * Get a grammar of the right type
+     * @param g grammar to create new instance of;
+     * @return a new grammar object of the right type
+     */
+    public static GEGrammar getGrammar(final GEGrammar g) {
+        final GEGrammar grammar;
+	if (g instanceof GEGrammar) {
+	    grammar = new GEGrammar(g);
+        } else {
+	    throw new IllegalArgumentException(g+" is not GEGrammar");
+	}
+        return grammar;
     }
 
     /**
@@ -225,12 +309,12 @@ public class GEGrammar extends ContextFreeGrammar implements ParameterI {
     public void setMaxCurrentTreeDepth(int maxCurrentTreeDepth) {
         this.maxCurrentTreeDepth = maxCurrentTreeDepth;
     }
-    
+
     /**
      * Get max wraps allowed
      * @return max wraps
      */
-    public int getMaxWraps(){
+    public int getMaxWraps() {
         return maxWraps;
     }
 
@@ -238,7 +322,7 @@ public class GEGrammar extends ContextFreeGrammar implements ParameterI {
      * Set max wraps
      * @param i max wraps
      */
-    public void setMaxWraps(int i){
+    public void setMaxWraps(int i) {
         this.maxWraps = i;
     }
 
@@ -267,13 +351,13 @@ public class GEGrammar extends ContextFreeGrammar implements ParameterI {
     }
 
     public void setPhenotype(Object p) {
-        this.phenotype = (Phenotype)p;
-        
+        this.phenotype = (Phenotype) p;
+
     }
-    
+
     public void setGenotype(Object g) {
-        this.genotype = (GEChromosome)g;
-        
+        this.genotype = (GEChromosome) g;
+
     }
 
     /**
@@ -298,6 +382,18 @@ public class GEGrammar extends ContextFreeGrammar implements ParameterI {
 
     public void setMaxDerivationTreeDepth(int maxDerivationTreeDepth) {
         this.maxDerivationTreeDepth = maxDerivationTreeDepth;
+    }
+
+    /**
+     * Set the derivation tree
+     * @param derivation tree
+     */
+    public void setDerivationTree(DerivationTree dT) {
+        this.dT = dT;
+    }
+
+    public DerivationTree getDerivationTree() {
+        return dT;
     }
 
     /**
@@ -331,30 +427,42 @@ public class GEGrammar extends ContextFreeGrammar implements ParameterI {
         }
         return len;
     }
-    
-    public String getName()
-    {   return name;
+
+    public String getName() {
+        return name;
     }
-    
+
     @Override
-    public boolean equals(Object obj)
-    {
-        if(obj == null || getClass() != obj.getClass())
+    public boolean equals(Object obj) {
+        if (obj == null || getClass() != obj.getClass()) {
             return false;
-        final GEGrammar that = (GEGrammar)obj;
-        if(name != that.name
-        &&(name == null
-        || name.equals(that.name) == false))
+        }
+        final GEGrammar that = (GEGrammar) obj;
+        if (name != that.name && (name == null || name.equals(that.name) == false)) {
             return false;
+        }
         return true;
     }
 
     @Override
-    public int hashCode()
-    {   if(name != null)
+    public int hashCode() {
+        if (name != null) {
             return name.hashCode();
+        }
         return 0;
     }
 
+    public int getDTNodeCount() {
+        return this.dTNodeCount;
+    }
+
+    public void setDerivationTreeType(String derivationTreeType) {
+        this.derivationTreeType = derivationTreeType;
+    }
+
+    @Override
+    public String getDerivationString() {
+        return this.derivationTreeType;
+    }
 }
 

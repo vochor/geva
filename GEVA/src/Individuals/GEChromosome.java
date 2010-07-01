@@ -1,32 +1,4 @@
 /*
-Grammatical Evolution in Java
-Release: GEVA-v1.0.zip
-Copyright (C) 2008 Michael O'Neill, Erik Hemberg, Anthony Brabazon, Conor Gilligan 
-Contributors Patrick Middleburgh, Eliott Bartley, Jonathan Hugosson, Jeff Wrigh
-
-Separate licences for asm, bsf, antlr, groovy, jscheme, commons-logging, jsci is included in the lib folder. 
-Separate licence for rieps is included in src/com folder.
-
-This licence refers to GEVA-v1.0.
-
-This software is distributed under the terms of the GNU General Public License.
-
-
-This program is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program.  If not, see <http://www.gnu.org/licenses/>.
-*/
-
-/*
  * GEChromosome.java
  *
  * Created on 09 October 2006, 12:34
@@ -48,6 +20,7 @@ public class GEChromosome extends StaticIntList implements Chromosome{
     private static int defaultLength = 100;
     private boolean validGenotype;
     private int maxCodonValue;
+    private int maxCodonValueBitSize = Integer.SIZE;
     private int usedGenes;
     private int usedWraps;
     int maxChromosomeLength;
@@ -74,6 +47,10 @@ public class GEChromosome extends StaticIntList implements Chromosome{
         this.validGenotype = c.validGenotype;
         this.maxCodonValue = c.maxCodonValue;
         this.maxChromosomeLength = c.maxChromosomeLength;
+    }
+
+    public int getCodonSizeBits() {
+        return this.maxCodonValueBitSize;
     }
 
     public int getMaxChromosomeLength() {
@@ -114,7 +91,7 @@ public class GEChromosome extends StaticIntList implements Chromosome{
      * @param usedGenes number of genes used
      */
     public void setUsedGenes(int usedGenes) {
-        this.usedGenes = usedGenes;
+        this.usedGenes = usedGenes; 
     }
 
     /**
@@ -125,12 +102,24 @@ public class GEChromosome extends StaticIntList implements Chromosome{
         return maxCodonValue;
     }
 
+    
+    public int getCodonSize() {
+        final int intSize = (int)Math.ceil((double)this.maxCodonValueBitSize/Byte.SIZE);
+        return intSize;
+    } 
     /**
      * Set maximum codon value. Small values can bias the
      * choices of production rules when applying mod to the codon value.
      * @param maxCodonValue maximum codon value allowed
      */
-    public void setMaxCodonValue(int maxCodonValue) {
+    public void setMaxCodonValue(final int maxCodonValue) {
+        final double mcvLog = Math.log(maxCodonValue);
+        final double twoLog = Math.log(2.0);
+        if(maxCodonValue==Integer.MAX_VALUE) {
+            this.maxCodonValueBitSize = Integer.SIZE;
+        } else {
+            this.maxCodonValueBitSize = (int) Math.ceil(mcvLog / twoLog);
+        }
         this.maxCodonValue = maxCodonValue;
     }
     
@@ -191,7 +180,7 @@ public class GEChromosome extends StaticIntList implements Chromosome{
     public String toString() {
         StringBuffer s = new StringBuffer();
         IntIterator i = this.iterator();
-        s.append("Chromosome Contents:");
+        s.append("Chromosome Contents: ");
         while(i.hasNext()) {
             s.append(i.next());
             s.append(",");

@@ -1,0 +1,25 @@
+Merge changes to trunk (Changes in trunk should be properly documented)
+Branch trunk to "GEVA-vNEW_VERSION_NUMBER"
+Update version in branch ("grep -re OLD_VERSION_NUMBER . | grep -v
+.svn")
+Update the documentation in techreport/geva.tex, create a "GEVA_docs-vNEW_VERSION_NUMBER.pdf"
+Update splash screen by creating a new jpg from keynoe, the file is in
+Util the jpg file should be located in ("GUI/src/UI/res/gevasplash400x300.002.001.jpg")
+Update changelog ("svn log --verbose -r http://ncra.ucd.ie:8080/svn/GEVA/GEVA/trunk" (Only the changes between the latest versions needs to be added to the changelog))
+Run "ant"
+Tag version uploaded to homepage ("svn cp BRANCH_DIR TAGS_DIR")
+Upload zip to homepage ("scp GEVA-vNEW_VERSION_NUMBER
+root@ncra.ucd.ie:/Library/WebServer/Documents/ncra/GEVA/.")
+Upload new documentation ("scp GEVA_docs-vNEW_VERSION_NUMBER.pdf
+root@ncra.ucd.ie:/Library/WebServer/Documents/ncra/GEVA/.")
+Change donwload text on homepage
+("ncra.ucd.ie:/Library/WebServer/Documents/ncra/Site/GEVA.html")
+
+Update trunk at google code page
+("http://code.google.com/p/geva/source/checkout")
+Checkout the trunk ("svn co http://geva.googlecode.com/svn/trunk")
+Merge changes from ncra.ucd.ie svn repository to working copy of
+google code trunk ("svn merge ncra_trunk ncra_branch .")
+Commit changes to trunk 
+Create new branch
+

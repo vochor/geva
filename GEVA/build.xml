@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
 <project name="geva_rc1" default="all">
   
-  
+  <echo>Ant version is ${ant.version}</echo>
   <property file="geva_rc1.properties"/>
   <!-- Uncomment the following property if no tests compilation is needed -->
   <!-- 
@@ -122,7 +122,7 @@
     <pathelement location="lib/groovy/groovy-1.0.jar"/>
     <pathelement location="lib/asm/asm-2.2.jar"/>
     <pathelement location="lib/bsf/bsf.jar"/>
-    <pathelement location="/sw/share/java/junit/junit.jar"/>
+    <pathelement location="../lib/junit.jar"/>
   </path>
   
   <patternset id="excluded.from.module.geva_rc1_exp">
@@ -183,6 +183,50 @@
         <type type="file"/>
       </fileset>
     </copy>
+  </target>
+  <!-- ============== JUNIT compilation =========================-->
+  <target name="test"
+        depends="compile.module.geva_rc1_exp.tests"
+        description="test classes"
+        >
+  </target>
+  <!-- ============== JUNIT compilation =========================-->
+  <target name="compile.module.geva_rc1_exp.tests"
+        depends="compile.module.geva_rc1_exp.production"
+        description="compile module GEVA_rc1_exp; test classes"
+        unless="skip.tests">
+    <mkdir dir="${geva_rc1_exp.testoutput.dir}"/>
+    <javac destdir="${geva_rc1_exp.testoutput.dir}"
+           debug="${compiler.debug}"
+           nowarn="${compiler.generate.no.warnings}"
+           memorymaximumsize="${compiler.max.memory}" 
+	   fork="true"
+	   source="1.5">
+      <classpath refid="geva_rc1_exp.test.classpath"/>
+      <src refid="geva_rc1_exp.module.test.sourcepath.id"/>
+      <patternset refid="excluded.from.compilation.geva_rc1_exp"/>
+    </javac>
+    <copy todir="${geva_rc1_exp.testoutput.dir}">
+      <fileset dir="${module.geva_rc1_exp.basedir}/test">
+        <patternset refid="compiler.resources"/>
+        <type type="file"/>
+      </fileset>
+    </copy>
+    <!-- ============= JUnit test ================-->
+    <junit printsummary="yes" haltonfailure="yes" fork="true">
+      <classpath>
+	<pathelement location="${geva_rc1_exp.testoutput.dir}"/>
+	<pathelement location="${geva_rc1_exp.output.dir}"/>
+	<pathelement location="../lib/junit.jar"/>
+      </classpath>
+      <formatter type="plain"/>
+
+      <batchtest todir="${geva_rc1_exp.testoutput.dir}">
+        <fileset dir="${geva_rc1_exp.module.test.sourcepath}">
+	  <include name="**/*Test.java"/>
+        </fileset>
+      </batchtest>
+    </junit>
   </target>
 
     <!-- ============== Clean up =========================-->
@@ -289,7 +333,7 @@
       <manifest>
 	<attribute name="Built-By" value="${user.name}"/>
 	<attribute name="URL" value="http://ncra.ucd.ie"/>
-	<attribute name="Main-Class" value="Main.Run"/>
+	<attribute name="Main-Class" value="Main.Experiment"/>
 	<attribute name="Class-Path" value="${manifest.cp}"/> 
       </manifest>
       <!-- Include properties and grammar files as standard in the jar
@@ -298,6 +342,8 @@
         <include name="**/*.properties"/>
       </fileset>
 	-->
+      <fileset dir="${module.geva_rc1_exp.basedir}/src"
+               includes="**/*.ps" />
     </jar>
 
   </target>
@@ -329,4 +375,23 @@
 
   </target>
 
+  <!--=====NetBeans Debug, should be moved NOT WORKING ====-->
+  <target name="debug" depends="compile.module.geva_rc1_exp" if="netbeans.home"
+	  description="Debug Project">
+    <nbjpdastart name="GEVA" addressproperty="jpda.address" transport="dt_socket">
+      <classpath refid="run.classpath"/>
+      <!-- Optional - If source roots are properly declared in project, should
+	   work without setting source path.
+	   <sourcepath refid="debug.sourcepath"/> -->
+    </nbjpdastart>
+    <java fork="true" classname="Main.Run">
+      <jvmarg value="-Xdebug"/>
+      <jvmarg value="-Xnoagent"/>
+      <jvmarg value="-Djava.compiler=none"/>
+      <jvmarg value="-Xrunjdwp:transport=dt_socket,address=${jpda.address}"/>
+      <classpath refid="geva_rc1_exp.runtime.module.classpath"/>
+    </java>
+  </target>
+
 </project>
+

@@ -1,32 +1,4 @@
 /*
-Grammatical Evolution in Java
-Release: GEVA-v1.0.zip
-Copyright (C) 2008 Michael O'Neill, Erik Hemberg, Anthony Brabazon, Conor Gilligan 
-Contributors Patrick Middleburgh, Eliott Bartley, Jonathan Hugosson, Jeff Wrigh
-
-Separate licences for asm, bsf, antlr, groovy, jscheme, commons-logging, jsci is included in the lib folder. 
-Separate licence for rieps is included in src/com folder.
-
-This licence refers to GEVA-v1.0.
-
-This software is distributed under the terms of the GNU General Public License.
-
-
-This program is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program.  If not, see <http://www.gnu.org/licenses/>.
-*/
-
-/*
  * DerivationTree.java
  *
  * Created on 17 October 2006, 13:32
@@ -39,16 +11,13 @@ package Mapper;
 
 import Exceptions.MalformedGrammarException;
 import Individuals.GEChromosome;
-import Individuals.Phenotype;
 import Util.Enums;
 import Util.Constants;
-import Util.Random.MersenneTwisterFast;
 import Util.Structures.IntIterator;
 import Util.Structures.NimbleTree;
 import Util.Structures.TreeNode;
 
-import java.io.BufferedWriter;
-import java.io.FileWriter;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.regex.Pattern;
 import java.util.regex.Matcher;
@@ -57,12 +26,12 @@ import java.util.regex.Matcher;
  * This class is used in the mapping from genotype to phenotype in GE.
  * @author EHemberg
  */
-public class DerivationTree extends NimbleTree<Symbol> {
-    private final GEGrammar grammy;
-    private final GEChromosome genny;
-    private int wrapCount;
-    private IntIterator genIter;
-    private int geneCnt;
+public class DerivationTree extends NimbleTree<Symbol> implements Derivation {
+    final GEGrammar grammy;
+    final GEChromosome genny;
+    int wrapCount = 0;
+    IntIterator genIter;
+    int geneCnt;
 
     @Override
     protected TreeNode<Symbol> newNode()
@@ -85,7 +54,19 @@ public class DerivationTree extends NimbleTree<Symbol> {
     }
 
     /**
-     * Build a derivation tree. Using the grammar as a mapper an the input is
+     * Copy Constructor
+     * @param DerivationTree copy
+     */
+    public DerivationTree(DerivationTree copy) {
+	super(copy);
+	this.grammy = new GEGrammar(copy.grammy);
+	this.genny = new GEChromosome(copy.genny);
+	this.wrapCount = copy.wrapCount;
+	this.geneCnt = copy.geneCnt;
+      }
+
+    /**
+     * Build a derivation tree. Using the grammar as a mapper and the input is
      *  the genotype.
      * @return validity of the mapping
      */
@@ -99,6 +80,7 @@ public class DerivationTree extends NimbleTree<Symbol> {
         validBuild = growNode(t);
         this.genny.setUsedGenes(this.geneCnt);
         //System.out.println(this.geneCnt);
+	//System.out.println(this.wrapCount);
         return validBuild;
     }
     
@@ -287,7 +269,8 @@ public class DerivationTree extends NimbleTree<Symbol> {
         if(this.geneCnt > this.genny.getMaxChromosomeLength()) {
             System.out.println("maxGEChromosomeLength exceeded:" + this.geneCnt+">"+genny.getMaxChromosomeLength());
             return false;
-        }
+        } 
+        
         if(s.getType()==Enums.SymbolType.NTSymbol){
             Rule r = this.grammy.findRule(s);
             int numProd = r.size();
@@ -295,10 +278,9 @@ public class DerivationTree extends NimbleTree<Symbol> {
                 this.wrapCount++;
                 this.genIter = genny.iterator();
             }
-            
+                
             //Use a codon if there is more then one production
             while(this.wrapCount <= this.grammy.getMaxWraps()) {
-                
                 Production p;
                 int currentCodonValue;
                 if(numProd>1) {
@@ -311,7 +293,7 @@ public class DerivationTree extends NimbleTree<Symbol> {
                     this.geneCnt++;
                     p= r.get(currentCodonValue % numProd);
                 } else {
-                    p = r.get(0);
+                    p = r.get(0);                
                 }
                 Iterator<Symbol> symIt = p.iterator();
                 DerivationNode newTree;
@@ -328,7 +310,7 @@ public class DerivationTree extends NimbleTree<Symbol> {
                             this.genIter = genny.iterator();
                             this.wrapCount++;
                         }
-                        
+                        this.geneCnt++;
                         currentCodonValue = this.genIter.next();
                         
                         try {
@@ -378,6 +360,9 @@ public class DerivationTree extends NimbleTree<Symbol> {
         return geneCnt;
     }
     
+    public boolean derive() {
+        return this.buildDerivationTree();
+    }
 }
 
 

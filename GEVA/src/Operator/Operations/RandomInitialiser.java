@@ -1,31 +1,3 @@
-/*
-Grammatical Evolution in Java
-Release: GEVA-v1.0.zip
-Copyright (C) 2008 Michael O'Neill, Erik Hemberg, Anthony Brabazon, Conor Gilligan 
-Contributors Patrick Middleburgh, Eliott Bartley, Jonathan Hugosson, Jeff Wrigh
-
-Separate licences for asm, bsf, antlr, groovy, jscheme, commons-logging, jsci is included in the lib folder. 
-Separate licence for rieps is included in src/com folder.
-
-This licence refers to GEVA-v1.0.
-
-This software is distributed under the terms of the GNU General Public License.
-
-
-This program is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program.  If not, see <http://www.gnu.org/licenses/>.
-*/
-
 package Operator.Operations;
 
 import Exceptions.BadParameterException;
@@ -45,7 +17,7 @@ import java.util.Properties;
  * @author erikhemberg
  */
 public class RandomInitialiser implements CreationOperation, Stochastic {
-    
+
     protected RandomNumberGenerator rng;
     protected GEGrammar grammar;
     protected int initChromSize;
@@ -76,33 +48,33 @@ public class RandomInitialiser implements CreationOperation, Stochastic {
 
     public void setProperties(Properties p) {
         int value;
-	String std = Constants.DEFAULT_CHROMOSOME_SIZE;
-	String key = Constants.INITIAL_CHROMOSOME_SIZE;
+        String std = Constants.DEFAULT_CHROMOSOME_SIZE;
+        String key = Constants.INITIAL_CHROMOSOME_SIZE;
         try {
-            value = Integer.parseInt(p.getProperty(key,std));
-            if(value < 1) {
+            value = Integer.parseInt(p.getProperty(key, std));
+            if (value < 1) {
                 throw new BadParameterException(key);
             }
-        } catch(Exception e) {
+        } catch (Exception e) {
             value = Integer.parseInt(std);
-            System.out.println(e+" for "+key+" using default: "+value);
+            System.out.println(e + " for " + key + " using default: " + value);
         }
         this.initChromSize = value;
     }
-    
+
     public RandomNumberGenerator getRNG() {
         return this.rng;
     }
-    
+
     public void setRNG(RandomNumberGenerator rng) {
         this.rng = rng;
     }
-    
+
     /** Creates an Individual
      *  @return A new individual
      **/
     public Individual createIndividual() {
-        GEGrammar gram = new GEGrammar(this.grammar);
+        GEGrammar gram = GEGrammar.getGrammar(this.grammar);
         Phenotype phenotype = new Phenotype();
         int[] codons = new int[this.initChromSize];
         GEChromosome chrom = new GEChromosome(this.initChromSize, codons);
@@ -111,9 +83,10 @@ public class RandomInitialiser implements CreationOperation, Stochastic {
         Genotype genotype = new Genotype(1, chrom);
         Fitness fitness = new BasicFitness();
         //this.doOperation(ind);
-        return new GEIndividual(gram, phenotype, genotype, fitness);
+        GEIndividual individual = new GEIndividual(gram, phenotype, genotype, fitness);
+        return individual;
     }
-    
+
     /**
      * Set an integer chromsome of initChromSize filled with random integers
      * in the incoming individual.
@@ -121,11 +94,11 @@ public class RandomInitialiser implements CreationOperation, Stochastic {
      **/
     public void doOperation(Individual operand) {
         int[] chr = new int[operand.getGenotype().get(0).getLength()];
-        for(int i=0; i<operand.getGenotype().get(0).getLength(); i++) {
+        for (int i = 0; i < operand.getGenotype().get(0).getLength(); i++) {
             chr[i] = rng.nextInt(Integer.MAX_VALUE);
         }
         //set the new genotype
-        ((GEChromosome)operand.getGenotype().get(0)).setAll(chr);
+        ((GEChromosome) operand.getGenotype().get(0)).setAll(chr);
     }
 
     /**
@@ -137,5 +110,4 @@ public class RandomInitialiser implements CreationOperation, Stochastic {
             this.doOperation(operand);
         }
     }
-    
 }

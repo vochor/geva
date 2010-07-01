@@ -1,32 +1,4 @@
 /*
-Grammatical Evolution in Java
-Release: GEVA-v1.0.zip
-Copyright (C) 2008 Michael O'Neill, Erik Hemberg, Anthony Brabazon, Conor Gilligan 
-Contributors Patrick Middleburgh, Eliott Bartley, Jonathan Hugosson, Jeff Wrigh
-
-Separate licences for asm, bsf, antlr, groovy, jscheme, commons-logging, jsci is included in the lib folder. 
-Separate licence for rieps is included in src/com folder.
-
-This licence refers to GEVA-v1.0.
-
-This software is distributed under the terms of the GNU General Public License.
-
-
-This program is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program.  If not, see <http://www.gnu.org/licenses/>.
-*/
-
-/*
  * BasicFitness.java
  *
  * Created on 06 March 2007, 16:14
@@ -35,12 +7,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 package Individuals.FitnessPackage;
 
-import Individuals.GEIndividual;
 import Individuals.Individual;
-import Util.Random.MersenneTwisterFast;
 
-import java.util.ArrayList;
-import java.util.Collections;
 
 /**
  * BasicFitness. Class holding a basic fitness measurement. Has a fitness value
@@ -141,9 +109,8 @@ public class BasicFitness implements Fitness {
         value = BasicFitness.DEFAULT_FITNESS;
     }
     
-    @SuppressWarnings({"SameReturnValue"})
     public double getDefaultFitness() {
-        return DEFAULT_FITNESS;
+        return BasicFitness.DEFAULT_FITNESS;
     }
     
     public double getDouble() {
@@ -176,32 +143,5 @@ public class BasicFitness implements Fitness {
     public void setInt(int f) {
         this.value = (float)f;
     }
-    
-    public static void main(String[] args) {
-        BasicFitness f  = new BasicFitness();
-        f.getDouble();
-        GEIndividual i = new GEIndividual();
-        i.setFitness(f);
-        f = (BasicFitness)i.getFitness();
-        f.setDouble(10.0);
-        System.out.println(f.getDouble());
-        MersenneTwisterFast m = new MersenneTwisterFast();
-        ArrayList<BasicFitness> list = new ArrayList<BasicFitness>();
-        for(int j = 0;j<100;j++) {
-            BasicFitness fit  = new BasicFitness(m.nextDouble(),i);
-            list.add(fit);
-            System.out.println(fit.getDouble()+", ");
-        }
-        System.out.println("Sort Ascending !");
-        Collections.sort(list);
-        for (BasicFitness aList : list) {
-            System.out.println(aList.getDouble() + ", ");
-        }
-        System.out.println("Sort Descending yeah !");
-        Collections.sort(list);
-        for (BasicFitness aList : list) {
-            System.out.println(aList.getDouble()+", ");
-        }
-    }
-    
+       
 }

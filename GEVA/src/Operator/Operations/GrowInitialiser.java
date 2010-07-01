@@ -1,31 +1,3 @@
-/*
-Grammatical Evolution in Java
-Release: GEVA-v1.0.zip
-Copyright (C) 2008 Michael O'Neill, Erik Hemberg, Anthony Brabazon, Conor Gilligan 
-Contributors Patrick Middleburgh, Eliott Bartley, Jonathan Hugosson, Jeff Wrigh
-
-Separate licences for asm, bsf, antlr, groovy, jscheme, commons-logging, jsci is included in the lib folder. 
-Separate licence for rieps is included in src/com folder.
-
-This licence refers to GEVA-v1.0.
-
-This software is distributed under the terms of the GNU General Public License.
-
-
-This program is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program.  If not, see <http://www.gnu.org/licenses/>.
-*/
-
 package Operator.Operations;
 
 import Exceptions.BadParameterException;
@@ -54,7 +26,7 @@ import java.util.Properties;
  * @author erikhemberg
  */
 public class GrowInitialiser implements CreationOperation, Stochastic {
-    
+
     protected Genotype genotype;
     protected GEChromosome chromosome;
     protected RandomNumberGenerator rng;
@@ -80,17 +52,17 @@ public class GrowInitialiser implements CreationOperation, Stochastic {
     }
 
     /**
-         * New instance
-         * @param rng random number generator
-         * @param gegrammar grammatical evolution grammar
-         * @param p properties
-         */
+     * New instance
+     * @param rng random number generator
+     * @param gegrammar grammatical evolution grammar
+     * @param p properties
+     */
     public GrowInitialiser(RandomNumberGenerator rng, GEGrammar gegrammar, Properties p) {
         this.grammar = gegrammar;
         setProperties(p);
         this.minDepth = 0;
         this.rng = rng;
-	this.extraCodons = 0;
+        this.extraCodons = 0;
     }
 
     public void setRNG(RandomNumberGenerator m) {
@@ -106,33 +78,33 @@ public class GrowInitialiser implements CreationOperation, Stochastic {
         try {
             String key = Constants.MAX_DEPTH;
             value = Integer.parseInt(p.getProperty(key));
-            if(value < 1) {
+            if (value < 1) {
                 throw new BadParameterException(key);
             }
-        } catch(Exception e) {
+        } catch (Exception e) {
             value = 10;
-            System.out.println(e+" using default: "+value);
+            System.out.println(e + " using default: " + value);
         }
         this.maxDepth = value;
-	String std = Constants.DEFAULT_CHROMOSOME_SIZE;
-	String key = Constants.INITIAL_CHROMOSOME_SIZE;
+        String std = Constants.DEFAULT_CHROMOSOME_SIZE;
+        String key = Constants.INITIAL_CHROMOSOME_SIZE;
         try {
-            value = Integer.parseInt(p.getProperty(key,std));
-            if(value < 1) {
+            value = Integer.parseInt(p.getProperty(key, std));
+            if (value < 1) {
                 throw new BadParameterException(key);
             }
-        } catch(Exception e) {
+        } catch (Exception e) {
             value = Integer.parseInt(std);
-            System.out.println(e+" for "+key+" using default: "+value);
+            System.out.println(e + " for " + key + " using default: " + value);
         }
         this.initChromSize = value;
     }
-    
+
     /**
      *  Creates an Individuals
      */
     public Individual createIndividual() {
-        GEGrammar gram = new GEGrammar(this.grammar);
+        GEGrammar gram = GEGrammar.getGrammar(this.grammar);
         Phenotype phenotype = new Phenotype();
         int[] codons = new int[this.initChromSize];
         GEChromosome chrom = new GEChromosome(this.initChromSize, codons);
@@ -140,13 +112,14 @@ public class GrowInitialiser implements CreationOperation, Stochastic {
         // - the tree, set the max derivation tree depth to the max depth of the
         // - the tree.
 
-        if(gram.getMaxDerivationTreeDepth() < this.maxDepth) {
+        if (gram.getMaxDerivationTreeDepth() < this.maxDepth) {
             gram.setMaxDerivationTreeDepth(this.maxDepth);
         }
         chrom.setMaxChromosomeLength(gram.getMaxChromosomeLengthByDepth());
-        Genotype genotype = new Genotype(1, chrom);
+        Genotype geno = new Genotype(1, chrom);
         Fitness fitness = new BasicFitness();
-        return new GEIndividual(gram, phenotype, genotype, fitness);
+        GEIndividual gei = new GEIndividual(gram, phenotype, geno, fitness);
+        return gei;
     }
 
     /**
@@ -180,25 +153,24 @@ public class GrowInitialiser implements CreationOperation, Stochastic {
     public int getMaxDepth() {
         return this.maxDepth;
     }
-    
+
     public void doOperation(Individual operand) {
-        GEIndividual ind = (GEIndividual)operand;
+        GEIndividual ind = (GEIndividual) operand;
         //ind = new GEIndividual(ind);
-        ind.setGenotype(this.getGenotype(((GEChromosome)ind.getGenotype().get(0)).getMaxChromosomeLength()));
-        //ind.getMapper().setGenotype(ind.getGenotype().get(0));
-        
-    }
-    
-    // Implement
-    public void doOperation(List<Individual> operands) {
+        ind.setGenotype(this.getGenotype(((GEChromosome) ind.getGenotype().get(0)).getMaxChromosomeLength()));
+    //ind.getMapper().setGenotype(ind.getGenotype().get(0));
 
     }
-    
+
+    // Implement
+    public void doOperation(List<Individual> operands) {
+    }
+
     /** Creates a genotype by building a tree to the most maxDepth for one branch.
      *  WHAT TO DO IF SIZE IS LARGER THAN MAX_LENGTH*WRAPS??
      *  @return A valid Genotype
      **/
-    public Genotype getGenotype(int maxLength){
+    public Genotype getGenotype(int maxLength) {
         genotype = new Genotype();
         chromosome = new GEChromosome(this.initChromSize);
         chromosome.setMaxChromosomeLength(maxLength);
@@ -210,16 +182,16 @@ public class GrowInitialiser implements CreationOperation, Stochastic {
         dt.populateStack();
         dt.setRoot(tn);
         dt.setCurrentNode(dt.getRoot());
-	// Grow tree
+        // Grow tree
         grow(dt);
-	if(this.extraCodons>0) {
-	    for(int i=0;i<this.extraCodons;i++) {
-		this.chromosome.add(this.rng.nextInt(Integer.MAX_VALUE));
-	    }
-	}
+        if (this.extraCodons > 0) {
+            for (int i = 0; i < this.extraCodons; i++) {
+                this.chromosome.add(this.rng.nextInt(Integer.MAX_VALUE));
+            }
+        }
         return genotype;
     }
-    
+
     /**
      * Recursively builds a tree.
      * @param dt Tree to grow on
@@ -237,55 +209,55 @@ public class GrowInitialiser implements CreationOperation, Stochastic {
         Symbol symbol;
 
         try {
-            if(dt.getCurrentNode().getData().getType() == Enums.SymbolType.TSymbol) {
+            if (dt.getCurrentNode().getData().getType() == Enums.SymbolType.TSymbol) {
                 //Check if it is for ADF
-                if(dt.getCurrentNode().getData().getSymbolString().contains("BRR")) {
+                if (dt.getCurrentNode().getData().getSymbolString().contains("BRR")) {
                     this.extraCodons++;
                 }
                 return true;
             }
-            if(dt.getCurrentLevel() > this.maxDepth) {
-                System.out.println("Too deep:"+dt.getCurrentLevel()+">"+this.maxDepth);
+            if (dt.getCurrentLevel() > this.maxDepth) {
+                //System.out.println("Too deep:"+dt.getCurrentLevel()+">"+this.maxDepth);
                 return false;
             }
             rule = grammar.findRule(dt.getCurrentNode().getData());
-            if(rule!=null){
+            if (rule != null) {
                 prodIt = rule.iterator();
                 possibleRules.clear();
                 int ii = 0;
                 //System.out.print(rule.getLHS().getSymbolString()+" minD:"+rule.getMinimumDepth()+" maxD:"+maxDepth+" cD:"+dt.getCurrentLevel());
 
-                while(prodIt.hasNext()) {
+                while (prodIt.hasNext()) {
                     prod = prodIt.next();
-                    if((dt.getCurrentLevel()+prod.getMinimumDepth()) <= this.maxDepth) {
+                    if ((dt.getCurrentLevel() + prod.getMinimumDepth()) <= this.maxDepth) {
                         possibleRules.add(ii);
                     }
                     ii++;
                 }
                 //System.out.print(" \n");
-                if(possibleRules.isEmpty()) {
+                if (possibleRules.isEmpty()) {
                     //System.out.println("EmptyPossible rules:"+rule);
                     return false;
                 } else {
                     prodVal = this.rng.nextInt(possibleRules.size());
                     int modVal = possibleRules.get(prodVal);
-                    int tmp1 = this.rng.nextInt((Integer.MAX_VALUE-rule.size()));
+                    int tmp1 = this.rng.nextInt((Integer.MAX_VALUE - rule.size()));
                     int tmp;
-                    int mod = tmp1%rule.size();
+                    int mod = tmp1 % rule.size();
                     int diff;
-                    if(mod>modVal) {
+                    if (mod > modVal) {
                         diff = mod - modVal;
                         tmp = tmp1 - diff;
                     } else {
                         diff = modVal - mod;
                         tmp = tmp1 + diff;
                     }
-                    int newMod = tmp%rule.size();
-                    if(newMod!=modVal) {
-                        System.out.println("modVal:"+modVal+" tmp1:"+tmp1+" mod:"+mod+" tmp:"+tmp+" rule.size():"+rule.size()+" newMod:"+newMod);
+                    int newMod = tmp % rule.size();
+                    if (newMod != modVal) {
+                        System.out.println("modVal:" + modVal + " tmp1:" + tmp1 + " mod:" + mod + " tmp:" + tmp + " rule.size():" + rule.size() + " newMod:" + newMod);
 
                     }
-                    if(rule.size() > 1) {
+                    if (rule.size() > 1) {
                         this.chromosome.add(tmp); //correct choosing of production??
                         prod = rule.get(possibleRules.get(prodVal));
                     } else {
@@ -297,14 +269,14 @@ public class GrowInitialiser implements CreationOperation, Stochastic {
                 result = true;
                 newMaxDepth = dt.getDepth();
                 symIt = prod.iterator();
-                while(symIt.hasNext() && result) {
+                while (symIt.hasNext() && result) {
                     symbol = symIt.next();
                     dt.addChild(symbol);
                     dt.setCurrentNode(dt.getCurrentNode().getEnd());
                     dt.setCurrentLevel(dt.getCurrentLevel() + 1);
                     result = grow(dt);
                     dt.setCurrentLevel(dt.getCurrentLevel() - 1);
-                    if(newMaxDepth < dt.getDepth()) {
+                    if (newMaxDepth < dt.getDepth()) {
                         newMaxDepth = dt.getDepth();
                     }
                 }
@@ -312,12 +284,12 @@ public class GrowInitialiser implements CreationOperation, Stochastic {
                 dt.setDepth(newMaxDepth);
                 return result;
             } else {
-                if(!checkGECodonValue(dt)) {
-                    throw new InitializationException("Non-existent rule, maybe GECODON not yet impelemnted. Could not find"+dt.getCurrentNode().getData().getSymbolString());
+                if (!checkGECodonValue(dt)) {
+                    throw new InitializationException("Non-existent rule, maybe GECODON not yet impelemnted. Could not find" + dt.getCurrentNode().getData().getSymbolString());
                 }
                 return true;
             }
-        } catch(InitializationException e) {
+        } catch (InitializationException e) {
             System.out.println(e);
             e.printStackTrace();
             return false;
@@ -332,11 +304,10 @@ public class GrowInitialiser implements CreationOperation, Stochastic {
     @SuppressWarnings({"BooleanMethodIsAlwaysInverted"})
     protected boolean checkGECodonValue(NimbleTree<Symbol> dt) {
         boolean ret = false;
-        if(dt.getCurrentNode().getData().getSymbolString().contains(Constants.GE_CODON_VALUE)) {
+        if (dt.getCurrentNode().getData().getSymbolString().contains(Constants.GE_CODON_VALUE)) {
             this.chromosome.add(this.rng.nextInt(Integer.MAX_VALUE));
             ret = true;
         }
         return ret;
     }
-    
 }

@@ -1,32 +1,4 @@
 /*
-Grammatical Evolution in Java
-Release: GEVA-v1.0.zip
-Copyright (C) 2008 Michael O'Neill, Erik Hemberg, Anthony Brabazon, Conor Gilligan 
-Contributors Patrick Middleburgh, Eliott Bartley, Jonathan Hugosson, Jeff Wrigh
-
-Separate licences for asm, bsf, antlr, groovy, jscheme, commons-logging, jsci is included in the lib folder. 
-Separate licence for rieps is included in src/com folder.
-
-This licence refers to GEVA-v1.0.
-
-This software is distributed under the terms of the GNU General Public License.
-
-
-This program is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program.  If not, see <http://www.gnu.org/licenses/>.
-*/
-
-/*
  * FitnessEvaluationOperation.java
  *
  * Created on April 17, 2007, 11:16 AM
@@ -34,7 +6,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * To change this template, choose Tools | Template Manager
  * and open the template in the editor.
  */
-
 package Operator.Operations;
 
 import FitnessEvaluation.FitnessFunction;
@@ -64,8 +35,8 @@ import javax.management.NotificationListener;
  * Set fitness.
  * @author erikhemberg
  */
-public class FitnessEvaluationOperation implements Operation{
-    
+public class FitnessEvaluationOperation implements Operation {
+
     private FitnessFunction fitnessFunction;
     private boolean evaluateEverytime = false;
     private HashMap<String, CacheItem> fitnessCache = new HashMap<String, CacheItem>();
@@ -81,7 +52,19 @@ public class FitnessEvaluationOperation implements Operation{
         this.fitnessFunction = ff;
         new CacheMemoryMonitor();
     }
-    
+
+    public int getPopulationSize() {
+        return populationSize;
+    }
+
+    public void setPopulationSize(int populationSize) {
+        this.populationSize = populationSize;
+    }
+
+    HashMap<String, CacheItem> getFitnessCache() {
+        return fitnessCache;
+    }
+
     /**
      * Evaluates Individuals that are not alreadt evaluated.
      * Map the individual.
@@ -92,34 +75,44 @@ public class FitnessEvaluationOperation implements Operation{
      * @param operand Individual to evaluate
      **/
     public void doOperation(Individual operand) {
-        if(!operand.isEvaluated()) {
-            //Map individual
-            operand.map(0);
-            boolean cache = fitnessFunction.canCache();
-            //cache = false;
-            if(cache == false
-            // Short-circuit, won't getFitnessFromCache if cache==false
-            || getFitnessFromCache(operand) == false)
-            {
-
-                if(operand.isValid()) {
+        //	System.out.println(this.getClass().getName()+".doOperation("+operand+") ENTRY");
+        operand.setEvaluated(false);
+        if (!operand.isEvaluated()) {
+            if (operand.getGenotype() == null && operand.getPhenotype() != null) {
+                // This can happen when individual's phenotype is constructed directly,
+                // eg by NGramEDAReproductionOperation. No need to map. Can't interact with cache.
+                if (operand.isValid()) {
                     this.fitnessFunction.getFitness(operand);
                 } else {
                     operand.getFitness().setDefault();
                 }
-
-                if(cache == true)
-                    addFitnessToCache(operand);
-                
+                return;
             }
 
-            if(this.evaluateEverytime) {
+            //Map individual
+            operand.map(0);
+
+            boolean cache = fitnessFunction.canCache();
+            //cache = false;
+            if (cache == false // Short-circuit, won't getFitnessFromCache if cache==false
+                    || getFitnessFromCache(operand) == false) {
+                if (operand.isValid()) {
+                    this.fitnessFunction.getFitness(operand);
+                } else {
+                    operand.getFitness().setDefault();
+                }
+                if (cache == true) {
+                    addFitnessToCache(operand);
+                }
+            }
+            if (this.evaluateEverytime) {
                 operand.setEvaluated(false);
             } else {
                 operand.setEvaluated(true);
             }
-            
         }
+    //	System.out.println(this.getClass().getName()+".doOperation("+operand+") EXIT");
+    //	System.out.println(this.getClass().getName()+".doOperation("+operand+") fit:"+operand.getFitness().getDouble());
     }
 
     /**
@@ -129,13 +122,13 @@ public class FitnessEvaluationOperation implements Operation{
      *  if the fitness function doesn't support caching (if canCache() == false)
      * @return true if the value was taken from the cache, false otherwise
      */
-    private boolean getFitnessFromCache(Individual operand)
-    {   assert fitnessFunction.canCache() == true;
-        
-        String fitnessName = ((GEGrammar)operand.getMapper()).getName();
-        synchronized(fitnessCache)
-        {   if(fitnessCache.containsKey(fitnessName) == true)
-            {   CacheItem cacheItem = fitnessCache.get(fitnessName);
+    private boolean getFitnessFromCache(Individual operand) {
+        assert fitnessFunction.canCache() == true;
+
+        String fitnessName = ((GEGrammar) operand.getMapper()).getName();
+        synchronized (fitnessCache) {
+            if (fitnessCache.containsKey(fitnessName) == true) {
+                CacheItem cacheItem = fitnessCache.get(fitnessName);
                 cacheItem.age = currentAge++;
                 cacheItem.lives++;
                 operand.getFitness().setDouble(cacheItem.value);
@@ -144,7 +137,7 @@ public class FitnessEvaluationOperation implements Operation{
         }
 
         return false;
-        
+
     }
 
     /**
@@ -157,35 +150,29 @@ public class FitnessEvaluationOperation implements Operation{
      *  towards each items usefulness, so the cache will never grow out of
      *  control
      */
-    private void addFitnessToCache(Individual operand)
-    {   assert fitnessFunction.canCache() == true;
+    private void addFitnessToCache(Individual operand) {
+        assert fitnessFunction.canCache() == true;
 
-        synchronized(fitnessCache)
-        {
-        
-            fitnessCache.put
-            (   ((GEGrammar)operand.getMapper()).getName(),
-                new CacheItem
-                (   operand.getFitness().getDouble(),
-                    currentAge++
-                )
-            );
+        synchronized (fitnessCache) {
+
+            fitnessCache.put(((GEGrammar) operand.getMapper()).getName(),
+                    new CacheItem(operand.getFitness().getDouble(),
+                    currentAge++));
 
             // If the cache gets too large, remove all the oldest entries. Old
             //  entries are those that haven't been 'hit' the longest
-            if(fitnessCache.size() >= populationSize * GENERATIONS_SURVIVAL)
-            {
+            if (fitnessCache.size() >= populationSize * GENERATIONS_SURVIVAL) {
 
                 Set<Entry<String, CacheItem>> entries = fitnessCache.entrySet();
                 Iterator<Entry<String, CacheItem>> entry = entries.iterator();
 
-                while(entry.hasNext() == true)
-                {   CacheItem item = entry.next().getValue();
-                    if(item.age - currentAge
-                     < -populationSize * GENERATIONS_SURVIVAL / 2)
-                    {   item.lives--;
-                        if(item.lives <= 0)
+                while (entry.hasNext() == true) {
+                    CacheItem item = entry.next().getValue();
+                    if (item.age - currentAge < -populationSize * GENERATIONS_SURVIVAL / 2) {
+                        item.lives--;
+                        if (item.lives <= 0) {
                             entry.remove();
+                        }
                     }
                 }
 
@@ -194,30 +181,34 @@ public class FitnessEvaluationOperation implements Operation{
                 //  This allows the cache to grow if it is being used quite
                 //  often, but not allow it to shrink below the original cache
                 //  size
-                if(fitnessCache.size()
-                 > originalPopulationSize * GENERATIONS_SURVIVAL / 2)
-                    populationSize = fitnessCache.size() * 2
-                                   / GENERATIONS_SURVIVAL;
+                if (fitnessCache.size() > originalPopulationSize * GENERATIONS_SURVIVAL / 2) {
+                    populationSize = fitnessCache.size() * 2 / GENERATIONS_SURVIVAL;
+                }
 
             }
-        
+
         }
-        
+
     }
-    
+
     /**
      * Get the size of the population, and use this to determine the size of the
      *  cache. The cache is set to GENERATIONS_SURVIVAL times the size of the
      *  population
      * @param p object containing properties
      */
-    public void setProperties(Properties p)
-    {   String value = p.getProperty(Constants.POPULATION_SIZE);
-        try
-        {   populationSize = Integer.parseInt(value);
+    public void setProperties(Properties p) {
+        String value = p.getProperty(Constants.POPULATION_SIZE);
+        try {
+            populationSize = Integer.parseInt(value);
             originalPopulationSize = populationSize;
+        } catch (NumberFormatException e) {
+            populationSize = Integer.parseInt(Constants.DEFAULT_POPULATION_SIZE);
         }
-        catch(NumberFormatException e) { populationSize = Integer.parseInt(Constants.DEFAULT_POPULATION_SIZE); }
+    }
+
+    public int getOriginalPopulationSize() {
+        return originalPopulationSize;
     }
 
     public void doOperation(List<Individual> operands) {
@@ -235,7 +226,7 @@ public class FitnessEvaluationOperation implements Operation{
     public FitnessFunction getFitnessFunction() {
         return this.fitnessFunction;
     }
-    
+
     /**
      * Cache values from the fitness-function so the fitness-function won't have
      *  to re-evalute if a genotype that was considerded before is cached. From
@@ -249,8 +240,8 @@ public class FitnessEvaluationOperation implements Operation{
      *  future regardless of how old it becomes)
      * @author eliott bartley
      */
-    private class CacheItem
-    {   
+    private class CacheItem {
+
         /**
          * The value of the cached item
          */
@@ -271,13 +262,12 @@ public class FitnessEvaluationOperation implements Operation{
          *  longer if that item had a very active life
          */
         public int lives;
-        
-        public CacheItem(double value, int age)
-        {   this.value = value;
+
+        public CacheItem(double value, int age) {
+            this.value = value;
             this.age = age;
             this.lives = 1;
         }
-        
     }
 
     /**
@@ -287,70 +277,65 @@ public class FitnessEvaluationOperation implements Operation{
      *  or lives, just a simple path of destruction
      * @author eliott bartley
      */
-    private class CacheMemoryMonitor
-    {
+    private class CacheMemoryMonitor {
 
         /**
          * Portion of memory that must be used before low-memory notification is
          *  reported
          */
         private final static float memoryThreshold = 0.75f;
-        
-        public CacheMemoryMonitor()
-        {   initialiseThreshold();
+
+        public CacheMemoryMonitor() {
+            initialiseThreshold();
             initialiseMonitor();
         }
-        
+
         /**
          * Set up threshold-notifications on all heaps that support it to
          *  generate notifications when memory usage exceeds the
          *  <var>memoryThreshold</var>
          */
-        private void initialiseThreshold()
-        {   for(MemoryPoolMXBean pool : ManagementFactory.getMemoryPoolMXBeans())
-                if(pool.getType() == MemoryType.HEAP
-                && pool.isUsageThresholdSupported() == true)
-                    pool.setUsageThreshold
-                    (   (long)(pool.getUsage().getMax() * memoryThreshold)
-                    );
+        private void initialiseThreshold() {
+            for (MemoryPoolMXBean pool : ManagementFactory.getMemoryPoolMXBeans()) {
+                if (pool.getType() == MemoryType.HEAP && pool.isUsageThresholdSupported() == true) {
+                    pool.setUsageThreshold((long) (pool.getUsage().getMax() * memoryThreshold));
+                }
+            }
         }
 
         /**
          * Set up the listener to respond to low-memory notifications (when
          *  memory usage exceeds the <var>memoryThreshold</var>
          */
-        private void initialiseMonitor()
-        {   MemoryMXBean memoryMonitor = ManagementFactory.getMemoryMXBean();
-            ((NotificationEmitter)memoryMonitor).addNotificationListener
-            (   new NotificationListener()
-                {   public void handleNotification
-                    (   Notification notification,
-                        Object userData
-                    ){  if(notification.getType().equals
-                        (   MemoryNotificationInfo.MEMORY_THRESHOLD_EXCEEDED)
-                        )   preformCleanup();
+        private void initialiseMonitor() {
+            MemoryMXBean memoryMonitor = ManagementFactory.getMemoryMXBean();
+            ((NotificationEmitter) memoryMonitor).addNotificationListener(new NotificationListener() {
+
+                public void handleNotification(Notification notification,
+                        Object userData) {
+                    if (notification.getType().equals(MemoryNotificationInfo.MEMORY_THRESHOLD_EXCEEDED)) {
+                        preformCleanup();
                     }
-                },
-                null,
-                null
-            );
+                }
+            },
+                    null,
+                    null);
         }
-        
+
         /**
          * Go through half the hash map and remove those entries. Unbiased
          *  towards age and life, but very biased towards position in hash map
          */
-        private void preformCleanup()
-        {   int size = fitnessCache.size() / 2;
+        private void preformCleanup() {
+            int size = fitnessCache.size() / 2;
 
-            synchronized(fitnessCache)
-            {
+            synchronized (fitnessCache) {
 
                 Set<Entry<String, CacheItem>> entries = fitnessCache.entrySet();
                 Iterator<Entry<String, CacheItem>> entry = entries.iterator();
 
-                while(entry.hasNext() == true && size > 0)
-                {   entry.next();
+                while (entry.hasNext() == true && size > 0) {
+                    entry.next();
                     entry.remove();
                     size--;
                 }
@@ -358,7 +343,5 @@ public class FitnessEvaluationOperation implements Operation{
             }
 
         }
-        
     }
-    
 }

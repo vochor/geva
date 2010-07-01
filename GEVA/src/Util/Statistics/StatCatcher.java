@@ -1,32 +1,4 @@
 /*
-Grammatical Evolution in Java
-Release: GEVA-v1.0.zip
-Copyright (C) 2008 Michael O'Neill, Erik Hemberg, Anthony Brabazon, Conor Gilligan 
-Contributors Patrick Middleburgh, Eliott Bartley, Jonathan Hugosson, Jeff Wrigh
-
-Separate licences for asm, bsf, antlr, groovy, jscheme, commons-logging, jsci is included in the lib folder. 
-Separate licence for rieps is included in src/com folder.
-
-This licence refers to GEVA-v1.0.
-
-This software is distributed under the terms of the GNU General Public License.
-
-
-This program is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program.  If not, see <http://www.gnu.org/licenses/>.
-*/
-
-/*
  * StatCatcher.java
  *
  * Created on November 2, 2006, 1:35 PM
@@ -34,7 +6,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 package Util.Statistics;
-
+import java.util.Collections;
 import Individuals.FitnessPackage.BasicFitness;
 import Individuals.FitnessPackage.Fitness;
 import Individuals.GEIndividual;
@@ -61,6 +33,7 @@ public class StatCatcher {
     protected ArrayList<Long> time;
     protected ArrayList<Integer> invalids;
     protected ArrayList<ArrayList<Double>> allFitness;
+    protected ArrayList<Individual> bestIndividualOfGeneration;
 
     /** Creates a new instance of StatCatcher */
     public StatCatcher() {
@@ -76,6 +49,7 @@ public class StatCatcher {
         this.time = new ArrayList<Long>();
         this.invalids = new ArrayList<Integer>();
         this.allFitness = new ArrayList<ArrayList<Double>>();
+	this.bestIndividualOfGeneration = new ArrayList<Individual>();
         }
 
     /**
@@ -95,7 +69,7 @@ public class StatCatcher {
         this.time = new ArrayList<Long>(gen);
         this.invalids = new ArrayList<Integer>(gen);
         this.allFitness = new ArrayList<ArrayList<Double>>(gen);
-
+	this.bestIndividualOfGeneration = new ArrayList<Individual>(gen);
     }
 
     /**
@@ -113,7 +87,7 @@ public class StatCatcher {
         this.meanDerivationTreeDepth = new ArrayList<Double>();
         this.invalids = new ArrayList<Integer>();
         this.allFitness = new ArrayList<ArrayList<Double>>();
-
+	this.bestIndividualOfGeneration = new ArrayList<Individual>();
     }
 
     /**
@@ -133,7 +107,7 @@ public class StatCatcher {
         double bestSoFar = Double.MAX_VALUE;
         double temp;
         double n = 0;
-        
+	Individual bestIndSoFar = null;
         //Calc best and mean
         for (Fitness popFitnes : popFitness) {
             temp = popFitnes.getDouble();
@@ -142,7 +116,7 @@ public class StatCatcher {
                 n++;
                 if (temp < bestSoFar) {
                     bestSoFar = temp;
-
+		    bestIndSoFar = popFitnes.getIndividual();
                 }
             }
         }
@@ -152,6 +126,7 @@ public class StatCatcher {
         double mean = total/n;
         this.meanFitness.add(mean);
         this.bestFitness.add(bestSoFar);
+	this.bestIndividualOfGeneration.add(bestIndSoFar);
         //calc variance
         total = 0;
         double x;
@@ -219,17 +194,24 @@ public class StatCatcher {
         int total = 0;
         int temp;
         double n = 0;
-        
+	//	ArrayList<Integer> ali = new ArrayList<Integer>(mG.length);
         //Calc best and mean
         for (Fitness aMG : mG) {
             if (aMG.getIndividual().isValid()) {
                 GEIndividual ind = (GEIndividual)aMG.getIndividual();
-                temp = ((GEGrammar)ind.getMapper()).getMaxCurrentTreeDepth();
+		if (ind.getMapper() == null) {
+		    // FIXME this hack allows NGram to run even though inds have no mapper
+		    temp = 0;
+		} else {
+		    temp = ((GEGrammar)ind.getMapper()).getMaxCurrentTreeDepth();
+		    //		    ali.add(temp);
+		}
                 total += temp;
                 n++;
             }
         }
-        
+	//        Collections.sort(ali);
+	//	System.out.println(this.getClass().getName()+".addMeanDerivationTreeDepth(.):\n"+ali);
         double mean = total/n;
         this.meanDerivationTreeDepth.add(mean);
     }
@@ -242,7 +224,6 @@ public class StatCatcher {
         int total = 0;
         int temp;
         double n = 0;
-        
         //Calc best and mean
         for (Fitness aMG : mG) {
             if (aMG.getIndividual().isValid()) {
@@ -251,14 +232,13 @@ public class StatCatcher {
                 n++;
             }
         }
-        
         double mean = total/n;
         this.meanUsedGenes.add(mean);
     }
 
     /**
-     * Add population to the statcatcher to work with. Calls many of the functions for adding
-     * statistics.
+     * Add population to the statcatcher to work with. Calls many of the 
+     * functions for adding statistics.
      * @param population incoming population
      */
     public void addStatsPop(ArrayList<Individual> population) {
@@ -275,7 +255,12 @@ public class StatCatcher {
             i = iterP.next();
             fits[cnt] =i.getFitness();
             usedGenes[cnt] = i.getFitness();
-            allLength.add(i.getGenotype().get(0).getLength());
+	    if (i.getGenotype() == null) {
+		// FIXME this hack allows NGram to run even though inds have no genotype
+		allLength.add(0);
+	    } else {
+		allLength.add(i.getGenotype().get(0).getLength());
+	    }
             if(!i.isValid()) {
                 nr_invalids++;
             }
@@ -295,6 +280,22 @@ public class StatCatcher {
         this.addMeanUsedGenes(usedGenes);
         this.addMeanDerivationTreeDepth(usedGenes);
         //System.out.println(System.currentTimeMillis() - start);
+    }
+
+    /**
+     * Get best individual of generation
+     * @return best individual of the latest generation
+     */
+    public Individual getBestIndividualOfGeneration() {
+	return this.bestIndividualOfGeneration.get(this.bestIndividualOfGeneration.size()-1);
+    }
+
+    /**
+     * Get best individuals of all generations
+     * @return best individuals of the generations
+     */
+    public ArrayList<Individual> getBestIndividualOfGenerations() {
+	return this.bestIndividualOfGeneration;
     }
 
     /**
